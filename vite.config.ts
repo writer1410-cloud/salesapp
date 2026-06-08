@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // GitHub Pages のプロジェクトページ配信用ベースパス（ビルド時のみ）
+  base: command === 'build' ? '/salesapp/' : '/',
   plugins: [
     react(),
     VitePWA({
@@ -32,4 +34,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+}))
