@@ -18,7 +18,7 @@ export function generateFallback(params: GenerateParams): SmallTalk[] {
   const { industry, ageGroup, role, customer } = params
   const count = params.count ?? 3
 
-  const industrySeeds = INDUSTRY_TOPICS[industry] ?? INDUSTRY_TOPICS.other
+  const industrySeeds = INDUSTRY_TOPICS[industry] ?? INDUSTRY_TOPICS.other ?? []
   const pool: TopicSeed[] = [...industrySeeds, ...GENERAL_TOPICS]
 
   // 顧客の趣味・出身地から個別話題を1つ足す
@@ -36,6 +36,7 @@ export function generateFallback(params: GenerateParams): SmallTalk[] {
       empathy: seed.empathy,
       question,
       trivia: seed.trivia,
+      sourceQuery: seed.sourceQuery,
       industry,
       ageGroup,
       role,
@@ -55,6 +56,7 @@ function buildPersonalSeed(customer?: Customer | null): TopicSeed | null {
       empathy: `好きなことの時間って、忙しい中でも大事にしたいですよね。`,
       question: `最近は${hobby}、楽しめていらっしゃいますか？`,
       trivia: `好きなことの話は、相手の表情が一番ゆるむ鉄板の話題と言われます。`,
+      sourceQuery: `${hobby} 話題`,
     }
   }
   if (customer.hometown?.trim()) {
@@ -64,6 +66,7 @@ function buildPersonalSeed(customer?: Customer | null): TopicSeed | null {
       empathy: `地元の話って、なんだか落ち着きますよね。`,
       question: `${customer.hometown}には、最近お帰りになったりするんですか？`,
       trivia: `出身地の話は距離を一気に縮める「ローカルトーク」として営業の定番です。`,
+      sourceQuery: `${customer.hometown} ニュース`,
     }
   }
   return null

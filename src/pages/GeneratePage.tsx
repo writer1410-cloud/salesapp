@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store'
-import { AGE_GROUPS, INDUSTRIES, ROLES } from '../data/options'
+import { AGE_GROUPS, ROLES } from '../data/options'
 import type { AgeGroupId, Customer, IndustryId, RoleId, SmallTalk } from '../types'
 import { Chips } from '../components/ui'
+import { IndustryPicker } from '../components/IndustryPicker'
 import { TalkCard, talkToSpeech } from '../components/TalkCard'
 import { BottomSheet } from '../components/BottomSheet'
 import { VoiceField } from '../components/VoiceField'
@@ -15,8 +16,10 @@ import { birthdaySoon, uid } from '../lib/util'
 export function GeneratePage() {
   const store = useStore()
   const { customers, settings, quota, showToast } = store
+  const profile = settings.profile
 
-  const [industry, setIndustry] = useState<IndustryId>('manufacturing')
+  // 自分の業界を「相手の業界」の初期値に採用（その場で変更可能）
+  const [industry, setIndustry] = useState<IndustryId>(profile?.industry ?? 'manufacturing')
   const [ageGroup, setAgeGroup] = useState<AgeGroupId>('50s')
   const [role, setRole] = useState<RoleId>('owner')
   const [customerId, setCustomerId] = useState<string>('')
@@ -99,9 +102,9 @@ export function GeneratePage() {
 
       <div className="card">
         <div className="section-label" style={{ marginTop: 0 }}>
-          相手の業界
+          相手の業界{profile && industry === profile.industry ? '（あなたと同じ業界）' : ''}
         </div>
-        <Chips options={INDUSTRIES} value={industry} onChange={setIndustry} />
+        <IndustryPicker value={industry} onChange={setIndustry} />
 
         <div className="section-label">年代</div>
         <Chips options={AGE_GROUPS} value={ageGroup} onChange={setAgeGroup} />

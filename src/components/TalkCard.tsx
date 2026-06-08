@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react'
 import type { SmallTalk } from '../types'
+import { newsSearchUrl } from '../types'
 
 interface Props {
   talk: SmallTalk
@@ -18,7 +20,18 @@ export function TalkCard({ talk, onSave, onSpeak, ttsLocked, saved, compact }: P
         <span className={`src ${talk.source}`}>{talk.source === 'ai' ? 'AI' : 'テンプレ'}</span>
       </div>
 
-      <Step no="1" kind="ニュース・話題" text={talk.news} />
+      <Step no="1" kind="ニュース・話題" text={talk.news}>
+        {talk.sourceQuery && (
+          <a
+            className="news-link"
+            href={newsSearchUrl(talk.sourceQuery)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            🔗 関連ニュースを見る
+          </a>
+        )}
+      </Step>
       <Step no="2" kind="主観・共感" text={talk.empathy} />
       <Step no="3" kind="質問" text={talk.question} />
 
@@ -50,7 +63,17 @@ export function TalkCard({ talk, onSave, onSpeak, ttsLocked, saved, compact }: P
   )
 }
 
-function Step({ no, kind, text }: { no: string; kind: string; text: string }) {
+function Step({
+  no,
+  kind,
+  text,
+  children,
+}: {
+  no: string
+  kind: string
+  text: string
+  children?: ReactNode
+}) {
   if (!text) return null
   return (
     <div className="step">
@@ -58,6 +81,7 @@ function Step({ no, kind, text }: { no: string; kind: string; text: string }) {
       <div className="step-body">
         <span className="step-kind">{kind}</span>
         <p>{text}</p>
+        {children}
       </div>
     </div>
   )

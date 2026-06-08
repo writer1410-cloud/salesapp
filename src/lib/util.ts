@@ -20,6 +20,23 @@ export function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
+/** 今日の日付 YYYY-MM-DD（ローカル） */
+export function todayYMD(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+    d.getDate(),
+  ).padStart(2, '0')}`
+}
+
+/** YYYY-MM-DD を「2026年6月8日(月)」形式に */
+export function formatYMD(ymd: string): string {
+  const [y, m, d] = ymd.split('-').map(Number)
+  if (!y || !m || !d) return ymd
+  const date = new Date(y, m - 1, d)
+  const w = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()]
+  return `${y}年${m}月${d}日(${w})`
+}
+
 /** 誕生日が近いか判定（自由記述から月日を緩く抽出） */
 export function birthdaySoon(birthday: string, withinDays = 14): boolean {
   if (!birthday) return false

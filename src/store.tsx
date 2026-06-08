@@ -1,17 +1,21 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Customer, SavedTalk, Settings, Usage } from './types'
+import type { Customer, DiaryEntry, SavedTalk, Settings, Usage } from './types'
 import {
   DEFAULT_SETTINGS,
+  addDiary,
   addSaved,
   deleteCustomer,
+  deleteDiary,
   deleteSaved,
   loadCustomers,
+  loadDiary,
   loadSaved,
   loadSettings,
   loadUsage,
   saveSettings,
   saveUsage,
+  updateDiary,
   updateSaved,
   upsertCustomer,
 } from './lib/storage'
@@ -20,6 +24,7 @@ import { consume, quota, type QuotaState } from './lib/billing'
 interface Store {
   customers: Customer[]
   saved: SavedTalk[]
+  diary: DiaryEntry[]
   usage: Usage
   settings: Settings
   quota: QuotaState
@@ -30,6 +35,9 @@ interface Store {
   addSavedTalk: (t: SavedTalk) => void
   updateSavedTalk: (t: SavedTalk) => void
   removeSavedTalk: (id: string) => void
+  addDiaryEntry: (e: DiaryEntry) => void
+  updateDiaryEntry: (e: DiaryEntry) => void
+  removeDiaryEntry: (id: string) => void
   consumeGeneration: () => void
   updateSettings: (patch: Partial<Settings>) => void
 }
@@ -40,6 +48,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [customers, setCustomers] = useState<Customer[]>(() => loadCustomers())
   const [saved, setSaved] = useState<SavedTalk[]>(() => loadSaved())
+  const [diary, setDiary] = useState<DiaryEntry[]>(() => loadDiary())
   const [usage, setUsage] = useState<Usage>(() => loadUsage(loadSettings().plan))
   const [toast, setToast] = useState('')
 
@@ -74,6 +83,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setSaved((list) => deleteSaved(list, id))
   }, [])
 
+  const addDiaryEntry = useCallback((e: DiaryEntry) => {
+    setDiary((list) => addDiary(list, e))
+  }, [])
+  const updateDiaryEntry = useCallback((e: DiaryEntry) => {
+    setDiary((list) => updateDiary(list, e))
+  }, [])
+  const removeDiaryEntry = useCallback((id: string) => {
+    setDiary((list) => deleteDiary(list, id))
+  }, [])
+
   const consumeGeneration = useCallback(() => {
     setUsage((u) => {
       const next = consume(u)
@@ -94,6 +113,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       customers,
       saved,
+      diary,
       usage,
       settings,
       quota: quota(usage),
@@ -104,12 +124,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addSavedTalk,
       updateSavedTalk,
       removeSavedTalk,
+      addDiaryEntry,
+      updateDiaryEntry,
+      removeDiaryEntry,
       consumeGeneration,
       updateSettings,
     }),
     [
       customers,
       saved,
+      diary,
       usage,
       settings,
       toast,
@@ -119,6 +143,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addSavedTalk,
       updateSavedTalk,
       removeSavedTalk,
+      addDiaryEntry,
+      updateDiaryEntry,
+      removeDiaryEntry,
       consumeGeneration,
       updateSettings,
     ],

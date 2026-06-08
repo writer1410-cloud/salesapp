@@ -76,6 +76,7 @@ interface RawTalk {
   empathy?: string
   question?: string
   trivia?: string
+  sourceQuery?: string
 }
 
 function normalize(t: RawTalk, gen: GenerateParams): SmallTalk {
@@ -86,6 +87,7 @@ function normalize(t: RawTalk, gen: GenerateParams): SmallTalk {
     empathy: t.empathy ?? '',
     question: t.question ?? '',
     trivia: t.trivia ?? '',
+    sourceQuery: t.sourceQuery ?? t.topic ?? '',
     industry: gen.industry,
     ageGroup: gen.ageGroup,
     role: gen.role,

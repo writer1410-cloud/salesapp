@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useStore } from '../store'
 import { Paywall } from '../components/Paywall'
-import { Toggle } from '../components/ui'
+import { Chips, Toggle } from '../components/ui'
+import { IndustryPicker } from '../components/IndustryPicker'
+import { AGE_GROUPS, ROLES, industryLabel } from '../data/options'
 import { getJapaneseVoices, onVoicesReady, speak, ttsSupported } from '../lib/speech'
 import { isFeatureUnlocked } from '../lib/billing'
-import { FREE_MONTHLY_LIMIT } from '../types'
+import { FREE_MONTHLY_LIMIT, type Profile } from '../types'
 
 export function SettingsPage() {
   const { settings, updateSettings, quota, showToast } = useStore()
@@ -34,10 +36,11 @@ export function SettingsPage() {
 
   return (
     <div className="page">
+      {/* 自分のプロフィール */}
+      <ProfileSection />
+
       {/* プラン */}
-      <div className="section-label" style={{ marginTop: 0 }}>
-        プラン
-      </div>
+      <div className="section-label">プラン</div>
       <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>
@@ -158,5 +161,76 @@ export function SettingsPage() {
 
       <Paywall open={paywall} onClose={() => setPaywall(false)} />
     </div>
+  )
+}
+
+function ProfileSection() {
+  const { settings, updateSettings, showToast } = useStore()
+  const base: Profile = settings.profile ?? {
+    name: '',
+    company: '',
+    industry: 'manufacturing',
+    ageGroup: '30s',
+    role: 'staff',
+  }
+  const [open, setOpen] = useState(false)
+  const [p, setP] = useState<Profile>(base)
+
+  const save = () => {
+    updateSettings({ profile: p })
+    showToast('プロフィールを更新しました')
+    setOpen(false)
+  }
+
+  return (
+    <>
+      <div className="section-label" style={{ marginTop: 0 }}>
+        あなたのプロフィール
+      </div>
+      <div className="card">
+        {!open ? (
+          <>
+            <div style={{ fontWeight: 700 }}>
+              {base.name || '名前未設定'}
+              <span className="mini-note"> ／ {base.company || '会社未設定'}</span>
+            </div>
+            <p className="mini-note" style={{ marginTop: 6 }}>
+              業界：{industryLabel(base.industry)}（雑談生成の「相手の業界」の初期値になります）
+            </p>
+            <button className="btn sm" style={{ marginTop: 8 }} onClick={() => setOpen(true)}>
+              ✏️ 編集
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="row-2">
+              <div className="field">
+                <label>お名前</label>
+                <input value={p.name} onChange={(e) => setP({ ...p, name: e.target.value })} />
+              </div>
+              <div className="field">
+                <label>会社名</label>
+                <input value={p.company} onChange={(e) => setP({ ...p, company: e.target.value })} />
+              </div>
+            </div>
+            <div className="field">
+              <label>あなたの業界</label>
+              <IndustryPicker value={p.industry} onChange={(v) => setP({ ...p, industry: v })} />
+            </div>
+            <div className="field">
+              <label>年代</label>
+              <Chips options={AGE_GROUPS} value={p.ageGroup} onChange={(v) => setP({ ...p, ageGroup: v })} />
+            </div>
+            <div className="field">
+              <label>立場</label>
+              <Chips options={ROLES} value={p.role} onChange={(v) => setP({ ...p, role: v })} />
+            </div>
+            <button className="btn primary block" onClick={save}>
+              保存する
+            </button>
+          </>
+        )}
+      </div>
+    </>
   )
 }

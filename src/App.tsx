@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from './store'
+import { Onboarding } from './pages/Onboarding'
 import { GeneratePage } from './pages/GeneratePage'
 import { CustomersPage } from './pages/CustomersPage'
 import { HistoryPage } from './pages/HistoryPage'
@@ -24,6 +25,16 @@ const TITLES: Record<Tab, string> = {
 export default function App() {
   const [tab, setTab] = useState<Tab>('generate')
   const { settings, toast } = useStore()
+
+  // 初回はプロフィール入力（オンボーディング）を表示
+  if (!settings.onboarded) {
+    return (
+      <>
+        <Onboarding />
+        {toast && <div className="toast">{toast}</div>}
+      </>
+    )
+  }
 
   return (
     <>

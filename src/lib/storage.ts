@@ -1,9 +1,10 @@
-import type { Customer, SavedTalk, Settings, Usage } from '../types'
+import type { Customer, DiaryEntry, SavedTalk, Settings, Usage } from '../types'
 import { currentMonth } from './util'
 
 const KEYS = {
   customers: 'eza.customers',
   saved: 'eza.savedTalks',
+  diary: 'eza.diary',
   usage: 'eza.usage',
   settings: 'eza.settings',
 } as const
@@ -65,6 +66,29 @@ export function deleteSaved(list: SavedTalk[], id: string): SavedTalk[] {
   return next
 }
 
+// ---- 雑談メモ（日記） ----
+export function loadDiary(): DiaryEntry[] {
+  return read<DiaryEntry[]>(KEYS.diary, [])
+}
+export function saveDiary(list: DiaryEntry[]): void {
+  write(KEYS.diary, list)
+}
+export function addDiary(list: DiaryEntry[], item: DiaryEntry): DiaryEntry[] {
+  const next = [item, ...list]
+  saveDiary(next)
+  return next
+}
+export function updateDiary(list: DiaryEntry[], item: DiaryEntry): DiaryEntry[] {
+  const next = list.map((x) => (x.id === item.id ? item : x))
+  saveDiary(next)
+  return next
+}
+export function deleteDiary(list: DiaryEntry[], id: string): DiaryEntry[] {
+  const next = list.filter((x) => x.id !== id)
+  saveDiary(next)
+  return next
+}
+
 // ---- 利用状況（課金・回数） ----
 export function loadUsage(plan: 'free' | 'premium'): Usage {
   const u = read<Usage>(KEYS.usage, { plan, month: currentMonth(), generatedCount: 0 })
@@ -84,6 +108,8 @@ export function saveUsage(u: Usage): void {
 // ---- 設定 ----
 export const DEFAULT_SETTINGS: Settings = {
   plan: 'free',
+  onboarded: false,
+  profile: null,
   ttsEnabled: true,
   ttsRate: 1,
   ttsVoiceURI: '',
