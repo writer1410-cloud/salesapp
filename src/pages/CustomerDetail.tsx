@@ -124,7 +124,10 @@ function ProfilePanel({
     }
     setSummarizing(true)
     try {
-      const { result, source } = await summarizeNotes(rawNotes, settings.apiBaseUrl || undefined)
+      const { result, source } = await summarizeNotes(rawNotes, {
+        apiBaseUrl: settings.apiBaseUrl || undefined,
+        geminiApiKey: settings.geminiApiKey || undefined,
+      })
       setDraft((d) => ({ ...d, ...stripEmpty(result), updatedAt: Date.now() }))
       showToast(source === 'ai' ? 'AIが整理して反映しました' : 'メモを整理して反映しました')
     } finally {

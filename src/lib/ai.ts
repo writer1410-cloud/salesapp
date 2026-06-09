@@ -1,6 +1,7 @@
 import type { Customer, SmallTalk } from '../types'
 import { ageLabel, industryLabel, roleLabel } from '../data/options'
 import { generateFallback, summarizeFallback, type GenerateParams } from './fallbackGenerator'
+import { geminiGenerateTalks, geminiSummarize } from './gemini'
 import { uid } from './util'
 
 export interface GenerateResult {
@@ -8,15 +9,23 @@ export interface GenerateResult {
   source: 'ai' | 'template'
 }
 
+/** AI接続の選択肢 */
+export interface AiOptions {
+  apiBaseUrl?: string // Edge Function 経由（推奨・サーバーでキー保持）
+  geminiApiKey?: string // 簡易: ブラウザから直接Gemini
+}
+
 /**
  * 雑談を生成する。
- * apiBaseUrl が設定されていれば Claude バックエンド（Edge Function）を呼び出し、
- * 失敗時・未設定時はテンプレート生成にフォールバックする。
+ * 優先順位: ① Edge Function(apiBaseUrl) → ② Geminiキー直結 → ③ 内蔵テンプレート。
+ * いずれも失敗時はテンプレートにフォールバックする。
  */
 export async function generateSmallTalks(
-  params: GenerateParams & { apiBaseUrl?: string },
+  params: GenerateParams & AiOptions,
 ): Promise<GenerateResult> {
-  const { apiBaseUrl, ...gen } = params
+  const { apiBaseUrl, geminiApiKey, ...gen } = params
+
+  // ① Edge Function 経由
   if (apiBaseUrl) {
     try {
       const res = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/generate-smalltalk`, {
@@ -39,9 +48,29 @@ export async function generateSmallTalks(
       if (talks.length) return { talks, source: 'ai' }
       throw new Error('empty')
     } catch (e) {
-      console.warn('AI生成に失敗したためテンプレート生成にフォールバックします:', e)
+      console.warn('Edge Function生成に失敗。次の手段にフォールバックします:', e)
     }
   }
+
+  // ② Geminiキー直結（ブラウザから直接）
+  if (geminiApiKey) {
+    try {
+      const raw = await geminiGenerateTalks({
+        industryLabel: industryLabel(gen.industry),
+        ageLabel: ageLabel(gen.ageGroup),
+        roleLabel: roleLabel(gen.role),
+        count: gen.count ?? 3,
+        customer: customerSummary(gen.customer),
+        key: geminiApiKey,
+      })
+      const talks = raw.map((t) => normalize(t, gen))
+      if (talks.length) return { talks, source: 'ai' }
+      throw new Error('empty')
+    } catch (e) {
+      console.warn('Gemini生成に失敗したためテンプレート生成にフォールバックします:', e)
+    }
+  }
+
   return { talks: generateFallback(gen), source: 'template' }
 }
 
@@ -50,8 +79,10 @@ export async function generateSmallTalks(
  */
 export async function summarizeNotes(
   text: string,
-  apiBaseUrl?: string,
+  opts: AiOptions = {},
 ): Promise<{ result: Partial<Customer>; source: 'ai' | 'template' }> {
+  const { apiBaseUrl, geminiApiKey } = opts
+
   if (apiBaseUrl && text.trim()) {
     try {
       const res = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/summarize-notes`, {
@@ -64,9 +95,19 @@ export async function summarizeNotes(
       if (data.result) return { result: data.result, source: 'ai' }
       throw new Error('empty')
     } catch (e) {
-      console.warn('AI要約に失敗したためテンプレート要約にフォールバックします:', e)
+      console.warn('Edge Function要約に失敗。次の手段にフォールバックします:', e)
     }
   }
+
+  if (geminiApiKey && text.trim()) {
+    try {
+      const result = await geminiSummarize(text, geminiApiKey)
+      if (Object.keys(result).length) return { result, source: 'ai' }
+    } catch (e) {
+      console.warn('Gemini要約に失敗したためテンプレート要約にフォールバックします:', e)
+    }
+  }
+
   return { result: summarizeFallback(text), source: 'template' }
 }
 

@@ -128,21 +128,8 @@ export function SettingsPage() {
       </div>
 
       {/* AI接続 */}
-      <div className="section-label">AI生成（上級者向け）</div>
-      <div className="card">
-        <div className="field">
-          <label>バックエンドURL（Supabase Edge Functions など）</label>
-          <input
-            value={settings.apiBaseUrl}
-            onChange={(e) => updateSettings({ apiBaseUrl: e.target.value.trim() })}
-            placeholder="https://xxxx.functions.supabase.co"
-          />
-          <p className="hint">
-            未設定の場合は、内蔵テンプレートで雑談を生成します（オフラインでも動作）。
-            設定するとClaude APIによる、よりパーソナルな生成になります。
-          </p>
-        </div>
-      </div>
+      <div className="section-label">AI生成</div>
+      <AiSection />
 
       {/* データ管理 */}
       <div className="section-label">データ管理</div>
@@ -160,6 +147,91 @@ export function SettingsPage() {
       </p>
 
       <Paywall open={paywall} onClose={() => setPaywall(false)} />
+    </div>
+  )
+}
+
+function AiSection() {
+  const { settings, updateSettings, showToast } = useStore()
+  const [showKey, setShowKey] = useState(false)
+  const [testing, setTesting] = useState(false)
+
+  const test = async () => {
+    if (!settings.geminiApiKey.trim()) {
+      showToast('Geminiキーを入力してください')
+      return
+    }
+    setTesting(true)
+    try {
+      const { geminiGenerateTalks } = await import('../lib/gemini')
+      const r = await geminiGenerateTalks({
+        industryLabel: 'IT・情報通信',
+        ageLabel: '40代',
+        roleLabel: '担当者',
+        count: 1,
+        key: settings.geminiApiKey.trim(),
+      })
+      showToast(r.length ? 'Gemini接続OK！生成できました' : 'Geminiから結果が空でした')
+    } catch (e) {
+      showToast('Gemini接続に失敗：' + String(e).slice(0, 60))
+    } finally {
+      setTesting(false)
+    }
+  }
+
+  return (
+    <div className="card">
+      <div className="field">
+        <label>かんたんモード：Gemini APIキー</label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            type={showKey ? 'text' : 'password'}
+            value={settings.geminiApiKey}
+            onChange={(e) => updateSettings({ geminiApiKey: e.target.value.trim() })}
+            placeholder="AIza... から始まるキー"
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck={false}
+          />
+          <button className="btn sm" onClick={() => setShowKey(!showKey)} style={{ flexShrink: 0 }}>
+            {showKey ? '隠す' : '表示'}
+          </button>
+        </div>
+        <p className="hint">
+          Google AI Studio（aistudio.google.com）で無料取得したキーを貼り付けると、AIによる雑談生成が使えます。
+          キーは<b>この端末内にのみ保存</b>され、Geminiへ直接送信されます（手軽な反面、端末・通信にキーが露出します。
+          無料枠の個人利用向けです）。
+        </p>
+        <div className="btn-row" style={{ marginTop: 8 }}>
+          <button className="btn sm accent" onClick={test} disabled={testing}>
+            {testing ? '接続中…' : '⚡ 接続テスト'}
+          </button>
+          {settings.geminiApiKey && (
+            <button
+              className="btn sm"
+              style={{ color: 'var(--danger)' }}
+              onClick={() => updateSettings({ geminiApiKey: '' })}
+            >
+              キーを削除
+            </button>
+          )}
+        </div>
+      </div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '6px 0 14px' }} />
+
+      <div className="field" style={{ marginBottom: 0 }}>
+        <label>本格運用：バックエンドURL（任意）</label>
+        <input
+          value={settings.apiBaseUrl}
+          onChange={(e) => updateSettings({ apiBaseUrl: e.target.value.trim() })}
+          placeholder="https://xxxx.functions.supabase.co"
+        />
+        <p className="hint">
+          Supabase Edge Function 経由でClaude/Geminiを呼ぶ場合のURL。サーバー側でキーを保持でき安全です。
+          未設定でも、上のGeminiキーか内蔵テンプレートで動作します。
+        </p>
+      </div>
     </div>
   )
 }

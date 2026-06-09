@@ -119,6 +119,7 @@ export interface Settings {
   ttsRate: number // 読み上げ速度
   ttsVoiceURI: string // 選択した音声
   apiBaseUrl: string // バックエンド(Edge Function)のURL。空ならテンプレート生成。
+  geminiApiKey: string // 簡易モード: ブラウザから直接Geminiを呼ぶための端末内保存キー
 }
 
 export const FREE_MONTHLY_LIMIT = 10

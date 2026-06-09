@@ -64,11 +64,12 @@ export function GeneratePage() {
         customer,
         count: 3,
         apiBaseUrl: settings.apiBaseUrl || undefined,
+        geminiApiKey: settings.geminiApiKey || undefined,
       })
       setResults(talks)
       setSavedIds(new Set())
       if (store.usage.plan === 'free') store.consumeGeneration()
-      if (source === 'template' && settings.apiBaseUrl) {
+      if (source === 'template' && (settings.apiBaseUrl || settings.geminiApiKey)) {
         showToast('AI接続に失敗。テンプレートで生成しました')
       }
     } catch {
