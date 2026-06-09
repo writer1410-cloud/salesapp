@@ -115,6 +115,7 @@ export const DEFAULT_SETTINGS: Settings = {
   ttsVoiceURI: '',
   apiBaseUrl: '',
   geminiApiKey: '',
+  geminiModel: '',
 }
 export function loadSettings(): Settings {
   return { ...DEFAULT_SETTINGS, ...read<Partial<Settings>>(KEYS.settings, {}) }

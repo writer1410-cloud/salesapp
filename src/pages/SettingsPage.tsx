@@ -6,7 +6,7 @@ import { IndustryPicker } from '../components/IndustryPicker'
 import { AGE_GROUPS, ROLES, industryLabel } from '../data/options'
 import { getJapaneseVoices, onVoicesReady, speak, ttsSupported } from '../lib/speech'
 import { isFeatureUnlocked } from '../lib/billing'
-import { FREE_MONTHLY_LIMIT, type Profile } from '../types'
+import { DEFAULT_GEMINI_MODEL, FREE_MONTHLY_LIMIT, GEMINI_MODELS, type Profile } from '../types'
 
 export function SettingsPage() {
   const { settings, updateSettings, quota, showToast } = useStore()
@@ -170,6 +170,7 @@ function AiSection() {
         roleLabel: '担当者',
         count: 1,
         key: settings.geminiApiKey.trim(),
+        model: settings.geminiModel || undefined,
       })
       showToast(r.length ? 'Gemini接続OK！生成できました' : 'Geminiから結果が空でした')
     } catch (e) {
@@ -188,7 +189,7 @@ function AiSection() {
             type={showKey ? 'text' : 'password'}
             value={settings.geminiApiKey}
             onChange={(e) => updateSettings({ geminiApiKey: e.target.value.trim() })}
-            placeholder="AIza... から始まるキー"
+            placeholder="AIza... または AQ.... から始まるキー"
             autoComplete="off"
             autoCapitalize="off"
             spellCheck={false}
@@ -201,6 +202,23 @@ function AiSection() {
           Google AI Studio（aistudio.google.com）で無料取得したキーを貼り付けると、AIによる雑談生成が使えます。
           キーは<b>この端末内にのみ保存</b>され、Geminiへ直接送信されます（手軽な反面、端末・通信にキーが露出します。
           無料枠の個人利用向けです）。
+        </p>
+      </div>
+
+      <div className="field">
+        <label>モデル</label>
+        <select
+          value={settings.geminiModel || DEFAULT_GEMINI_MODEL}
+          onChange={(e) => updateSettings({ geminiModel: e.target.value })}
+        >
+          {GEMINI_MODELS.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+        <p className="hint">
+          429（上限超過）が出る場合は「flash-lite」など別モデルに切り替えると回避できることがあります。
         </p>
         <div className="btn-row" style={{ marginTop: 8 }}>
           <button className="btn sm accent" onClick={test} disabled={testing}>

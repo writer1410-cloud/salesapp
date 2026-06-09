@@ -65,6 +65,7 @@ export function GeneratePage() {
         count: 3,
         apiBaseUrl: settings.apiBaseUrl || undefined,
         geminiApiKey: settings.geminiApiKey || undefined,
+        geminiModel: settings.geminiModel || undefined,
       })
       setResults(talks)
       setSavedIds(new Set())

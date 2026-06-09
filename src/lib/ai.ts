@@ -13,6 +13,7 @@ export interface GenerateResult {
 export interface AiOptions {
   apiBaseUrl?: string // Edge Function 経由（推奨・サーバーでキー保持）
   geminiApiKey?: string // 簡易: ブラウザから直接Gemini
+  geminiModel?: string // 使用するGeminiモデル
 }
 
 /**
@@ -23,7 +24,7 @@ export interface AiOptions {
 export async function generateSmallTalks(
   params: GenerateParams & AiOptions,
 ): Promise<GenerateResult> {
-  const { apiBaseUrl, geminiApiKey, ...gen } = params
+  const { apiBaseUrl, geminiApiKey, geminiModel, ...gen } = params
 
   // ① Edge Function 経由
   if (apiBaseUrl) {
@@ -62,6 +63,7 @@ export async function generateSmallTalks(
         count: gen.count ?? 3,
         customer: customerSummary(gen.customer),
         key: geminiApiKey,
+        model: geminiModel,
       })
       const talks = raw.map((t) => normalize(t, gen))
       if (talks.length) return { talks, source: 'ai' }
@@ -81,7 +83,7 @@ export async function summarizeNotes(
   text: string,
   opts: AiOptions = {},
 ): Promise<{ result: Partial<Customer>; source: 'ai' | 'template' }> {
-  const { apiBaseUrl, geminiApiKey } = opts
+  const { apiBaseUrl, geminiApiKey, geminiModel } = opts
 
   if (apiBaseUrl && text.trim()) {
     try {
@@ -101,7 +103,7 @@ export async function summarizeNotes(
 
   if (geminiApiKey && text.trim()) {
     try {
-      const result = await geminiSummarize(text, geminiApiKey)
+      const result = await geminiSummarize(text, geminiApiKey, geminiModel)
       if (Object.keys(result).length) return { result, source: 'ai' }
     } catch (e) {
       console.warn('Gemini要約に失敗したためテンプレート要約にフォールバックします:', e)

@@ -4,14 +4,12 @@
 //   手軽な反面、キーが端末・通信に露出するため、無料枠の個人利用向けです。
 //   本格運用は Supabase Edge Function 経由（サーバーでキー保持）を推奨します。
 
-import type { Customer } from '../types'
+import { DEFAULT_GEMINI_MODEL, type Customer } from '../types'
 
 const ENDPOINT = (model: string, key: string) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(
     key,
   )}`
-
-const DEFAULT_MODEL = 'gemini-2.0-flash'
 
 interface GeminiSchema {
   type: string
@@ -26,9 +24,10 @@ async function geminiJSON(
   user: string,
   schema: GeminiSchema,
   key: string,
+  model: string,
   maxTokens = 4000,
 ): Promise<unknown> {
-  const res = await fetch(ENDPOINT(DEFAULT_MODEL, key), {
+  const res = await fetch(ENDPOINT(model || DEFAULT_GEMINI_MODEL, key), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -43,7 +42,10 @@ async function geminiJSON(
   })
   if (!res.ok) {
     const detail = await res.text().catch(() => '')
-    throw new Error(`Gemini API error ${res.status}: ${detail.slice(0, 200)}`)
+    if (res.status === 429) {
+      throw new Error('429 無料枠の上限/レート制限です。少し待つか、別モデルをお試しください。')
+    }
+    throw new Error(`Gemini API error ${res.status}: ${detail.slice(0, 160)}`)
   }
   const data = await res.json()
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
@@ -97,6 +99,7 @@ export async function geminiGenerateTalks(args: {
   count: number
   customer?: Partial<Customer> | null
   key: string
+  model?: string
 }): Promise<RawTalk[]> {
   const c = args.customer
   const customerBlock = c
@@ -106,7 +109,9 @@ export async function geminiGenerateTalks(args: {
     : ''
   const user = `次の相手に向けた雑談を${args.count}件作ってください。
 業界:${args.industryLabel} / 年代:${args.ageLabel} / 立場:${args.roleLabel}${customerBlock}`
-  const result = (await geminiJSON(TALK_SYSTEM, user, TALK_SCHEMA, args.key)) as { talks?: RawTalk[] }
+  const result = (await geminiJSON(TALK_SYSTEM, user, TALK_SCHEMA, args.key, args.model ?? '')) as {
+    talks?: RawTalk[]
+  }
   return result.talks ?? []
 }
 
@@ -127,12 +132,17 @@ const SUMMARY_SCHEMA: GeminiSchema = {
   required: ['name', 'company', 'hometown', 'family', 'birthday', 'hobbies', 'notes'],
 }
 
-export async function geminiSummarize(text: string, key: string): Promise<Partial<Customer>> {
+export async function geminiSummarize(
+  text: string,
+  key: string,
+  model = '',
+): Promise<Partial<Customer>> {
   const result = (await geminiJSON(
     SUMMARY_SYSTEM,
     `次のメモを整理してください:\n\n${text}`,
     SUMMARY_SCHEMA,
     key,
+    model,
     1500,
   )) as Record<string, unknown>
   const cleaned: Partial<Customer> = {}
