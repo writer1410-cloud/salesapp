@@ -60,6 +60,8 @@ export interface RawTalk {
   question?: string
   trivia?: string
   sourceQuery?: string
+  sourceUrl?: string
+  sourceTitle?: string
 }
 
 const TALK_SYSTEM = `あなたは日本のルート営業担当者の「雑談ブレーン」です。
@@ -92,6 +94,84 @@ const TALK_SCHEMA: GeminiSchema = {
   required: ['talks'],
 }
 
+const TALK_SYSTEM_GROUNDED = `あなたは日本のルート営業担当者の「雑談ブレーン」です。
+Google検索で「最新かつ鮮度の高い」ニュースを調べ、それを元ネタに商談前の雑談を作ります。
+
+重視すること:
+- できるだけ直近(数日〜数週間)の新しい話題を使う
+- ありきたりな話題よりも、その業界ならではのニッチで具体的な話題を優先する
+- 大手の一般ニュースより、専門メディアや業界特有の動きを拾う
+
+各雑談は「3ステップ公式」で構成します:
+1. news: ニュース・話題のふり（実際に調べた具体的な話題。固有名詞や数字を適度に。断定しすぎない）
+2. empathy: 主観・共感（ひと言）
+3. question: 相手が答えやすいオープンな質問
+さらに:
+- trivia: その話題から派生する豆知識
+- sourceQuery: 元ネタを探す日本語検索キーワード
+- sourceTitle: 参照した実際の記事の見出し（分かる場合）
+
+出力は次の形式の JSON のみ。コードブロックや前後の説明文は一切付けないこと:
+{"talks":[{"topic":"","news":"","empathy":"","question":"","trivia":"","sourceQuery":"","sourceTitle":""}]}
+政治・宗教は避け、年代・役職に合わせた敬語で、口に出せる短い話し言葉にしてください。`
+
+/** Google検索グラウンディングで最新ニュースを基に生成（実記事URLを付与） */
+async function geminiGroundedTalks(
+  system: string,
+  user: string,
+  key: string,
+  model: string,
+): Promise<RawTalk[]> {
+  const res = await fetch(ENDPOINT(model || DEFAULT_GEMINI_MODEL, key), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: system }] },
+      contents: [{ role: 'user', parts: [{ text: user }] }],
+      tools: [{ google_search: {} }],
+      generationConfig: { maxOutputTokens: 4000 },
+    }),
+  })
+  if (!res.ok) {
+    if (res.status === 429) {
+      throw new Error('429 無料枠の上限/レート制限です。少し待つか、別モデルをお試しください。')
+    }
+    throw new Error(`Gemini API error ${res.status}`)
+  }
+  const data = await res.json()
+  const cand = data?.candidates?.[0]
+  const text = (cand?.content?.parts ?? [])
+    .map((p: { text?: string }) => p.text ?? '')
+    .join('')
+  const parsed = extractJson(text) as { talks?: RawTalk[] }
+  const talks = parsed.talks ?? []
+
+  // グラウンディングで使われた実際の記事URLを順に割り当てる
+  const chunks = (cand?.groundingMetadata?.groundingChunks ?? []) as Array<{
+    web?: { uri?: string; title?: string }
+  }>
+  const sources = chunks
+    .map((c) => ({ uri: c.web?.uri, title: c.web?.title }))
+    .filter((s): s is { uri: string; title: string | undefined } => !!s.uri)
+  talks.forEach((t, i) => {
+    const s = sources[i] ?? sources[0]
+    if (s) {
+      t.sourceUrl = s.uri
+      if (!t.sourceTitle && s.title) t.sourceTitle = s.title
+    }
+  })
+  return talks
+}
+
+/** テキストから最初の { ... } を取り出して JSON.parse */
+function extractJson(text: string): unknown {
+  const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim()
+  const start = cleaned.indexOf('{')
+  const end = cleaned.lastIndexOf('}')
+  if (start === -1 || end === -1) throw new Error('JSONを抽出できませんでした')
+  return JSON.parse(cleaned.slice(start, end + 1))
+}
+
 export async function geminiGenerateTalks(args: {
   industryLabel: string
   ageLabel: string
@@ -100,6 +180,7 @@ export async function geminiGenerateTalks(args: {
   customer?: Partial<Customer> | null
   key: string
   model?: string
+  grounding?: boolean // Web検索で最新ニュースを使うか
 }): Promise<RawTalk[]> {
   const c = args.customer
   const customerBlock = c
@@ -107,8 +188,19 @@ export async function geminiGenerateTalks(args: {
         c.family || '不明'
       } / 誕生日:${c.birthday || '不明'} / 趣味:${c.hobbies || '不明'} / メモ:${c.notes || 'なし'}`
     : ''
-  const user = `次の相手に向けた雑談を${args.count}件作ってください。
+  const user = `次の相手に向けた雑談を${args.count}件作ってください。最新で具体的、できればニッチな話題を優先。
 業界:${args.industryLabel} / 年代:${args.ageLabel} / 立場:${args.roleLabel}${customerBlock}`
+
+  // Web検索連動を優先。失敗時は通常の構造化生成にフォールバック。
+  if (args.grounding !== false) {
+    try {
+      const talks = await geminiGroundedTalks(TALK_SYSTEM_GROUNDED, user, args.key, args.model ?? '')
+      if (talks.length) return talks
+    } catch (e) {
+      console.warn('Web検索連動の生成に失敗。通常生成にフォールバックします:', e)
+    }
+  }
+
   const result = (await geminiJSON(TALK_SYSTEM, user, TALK_SCHEMA, args.key, args.model ?? '')) as {
     talks?: RawTalk[]
   }

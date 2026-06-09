@@ -83,6 +83,8 @@ export interface SmallTalk {
   question: string // ステップ3: 質問
   trivia: string // 派生する豆知識
   sourceQuery: string // 元ネタを探すためのニュース検索キーワード
+  sourceUrl?: string // 実際の参照ニュース記事URL（Web検索連動時）
+  sourceTitle?: string // 参照記事の見出し
   industry: IndustryId
   ageGroup: AgeGroupId
   role: RoleId

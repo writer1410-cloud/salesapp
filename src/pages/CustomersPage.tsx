@@ -32,7 +32,7 @@ export function CustomersPage() {
   // グループ一覧
   const groups = useMemo(() => {
     const set = new Set<string>()
-    customers.forEach((c) => set.add(c.group.trim() || UNGROUPED))
+    customers.forEach((c) => set.add((c.group || '').trim() || UNGROUPED))
     return Array.from(set)
   }, [customers])
 
@@ -40,7 +40,7 @@ export function CustomersPage() {
   const grouped = useMemo(() => {
     const map = new Map<string, Customer[]>()
     for (const c of customers) {
-      const g = c.group.trim() || UNGROUPED
+      const g = (c.group || '').trim() || UNGROUPED
       if (filter !== 'すべて' && g !== filter) continue
       if (!map.has(g)) map.set(g, [])
       map.get(g)!.push(c)

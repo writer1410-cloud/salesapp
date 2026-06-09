@@ -24,7 +24,9 @@ function write<T>(key: string, value: T): void {
 
 // ---- 顧客 ----
 export function loadCustomers(): Customer[] {
-  return read<Customer[]>(KEYS.customers, []).sort((a, b) => b.updatedAt - a.updatedAt)
+  return read<Customer[]>(KEYS.customers, [])
+    .map((c) => ({ ...c, group: c.group ?? '' })) // 旧データの不足項目を補完
+    .sort((a, b) => b.updatedAt - a.updatedAt)
 }
 export function saveCustomers(list: Customer[]): void {
   write(KEYS.customers, list)

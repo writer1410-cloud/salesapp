@@ -39,9 +39,9 @@ function hex(c) {
 }
 
 function buildPng(size) {
-  const bg = hex('#0f766e')
-  const fg = hex('#f4f1ea')
-  const accent = hex('#f59e0b')
+  const bg = hex('#14233c')
+  const fg = hex('#ffffff')
+  const accent = hex('#d8362f')
   const px = (x, y) => {
     // 角丸背景
     const r = size * 0.22

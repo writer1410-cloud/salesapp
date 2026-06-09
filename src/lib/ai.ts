@@ -120,6 +120,8 @@ interface RawTalk {
   question?: string
   trivia?: string
   sourceQuery?: string
+  sourceUrl?: string
+  sourceTitle?: string
 }
 
 function normalize(t: RawTalk, gen: GenerateParams): SmallTalk {
@@ -131,6 +133,8 @@ function normalize(t: RawTalk, gen: GenerateParams): SmallTalk {
     question: t.question ?? '',
     trivia: t.trivia ?? '',
     sourceQuery: t.sourceQuery ?? t.topic ?? '',
+    sourceUrl: t.sourceUrl,
+    sourceTitle: t.sourceTitle,
     industry: gen.industry,
     ageGroup: gen.ageGroup,
     role: gen.role,

@@ -21,15 +21,21 @@ export function TalkCard({ talk, onSave, onSpeak, ttsLocked, saved, compact }: P
       </div>
 
       <Step no="1" kind="ニュース・話題" text={talk.news}>
-        {talk.sourceQuery && (
-          <a
-            className="news-link"
-            href={newsSearchUrl(talk.sourceQuery)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            🔗 関連ニュースを見る
+        {talk.sourceUrl ? (
+          <a className="news-link" href={talk.sourceUrl} target="_blank" rel="noopener noreferrer">
+            📰 {talk.sourceTitle ? clip(talk.sourceTitle, 34) : '元記事を読む'}
           </a>
+        ) : (
+          talk.sourceQuery && (
+            <a
+              className="news-link"
+              href={newsSearchUrl(talk.sourceQuery)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🔗 関連ニュースを見る
+            </a>
+          )
         )}
       </Step>
       <Step no="2" kind="主観・共感" text={talk.empathy} />
@@ -85,6 +91,10 @@ function Step({
       </div>
     </div>
   )
+}
+
+function clip(s: string, n: number): string {
+  return s.length > n ? s.slice(0, n) + '…' : s
 }
 
 /** 雑談全文を読み上げ用の1テキストに連結 */
