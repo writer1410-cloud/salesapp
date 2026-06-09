@@ -24,7 +24,7 @@ export function Onboarding() {
   return (
     <div className="onboarding">
       <div className="hero">
-        <div className="logo">🗣️</div>
+        <div className="logo">TALK ASSIST</div>
         <h1>営業雑談アシスタント</h1>
         <p>まずはあなたのプロフィールを登録しましょう</p>
       </div>

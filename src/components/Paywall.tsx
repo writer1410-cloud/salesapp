@@ -18,20 +18,20 @@ export function Paywall({ open, onClose, reason }: Props) {
 
   const upgrade = () => {
     updateSettings({ plan: 'premium' })
-    showToast('プレミアムにアップグレードしました 🎉')
+    showToast('プレミアムにアップグレードしました')
     onClose()
   }
 
   return (
-    <BottomSheet open={open} title="プレミアムプラン" onClose={onClose}>
+    <BottomSheet open={open} title="PREMIUM" onClose={onClose}>
       {reason && (
-        <div className="banner warn">
-          <span>🔒</span>
+        <div className="banner gold">
           <span>{reason}</span>
         </div>
       )}
-      <div className="card">
-        <h3 style={{ marginTop: 0 }}>プレミアムでできること</h3>
+      <div className="card premium-card">
+        <div className="premium-tag">PREMIUM</div>
+        <h3 style={{ margin: '8px 0 10px' }}>プレミアムでできること</h3>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 2 }}>
           <li>
             雑談生成が<b>無制限</b>
@@ -45,8 +45,8 @@ export function Paywall({ open, onClose, reason }: Props) {
         <p className="mini-note" style={{ marginTop: 12 }}>
           月額プラン（デモ）。下のボタンで購入フローをシミュレートします。
         </p>
-        <button className="btn accent block" style={{ marginTop: 8 }} onClick={upgrade}>
-          ✨ プレミアムにアップグレード
+        <button className="btn gold block" style={{ marginTop: 8 }} onClick={upgrade}>
+          プレミアムにアップグレード
         </button>
       </div>
       <button className="btn block" onClick={onClose}>

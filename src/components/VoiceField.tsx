@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { startDictation, sttSupported, type Dictation } from '../lib/speech'
+import { Icon } from './Icon'
 
 interface Props {
   value: string
@@ -53,7 +54,8 @@ export function VoiceField({ value, onChange, placeholder, rows = 4, onError }: 
           style={{ marginTop: 6 }}
           onClick={toggle}
         >
-          {recording ? '⏹ 録音停止' : '🎤 音声で入力'}
+          <Icon name={recording ? 'stop' : 'mic'} size={15} />
+          {recording ? '録音停止' : '音声で入力'}
         </button>
       )}
     </div>

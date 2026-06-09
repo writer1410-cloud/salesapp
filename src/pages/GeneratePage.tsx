@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store'
-import { AGE_GROUPS, ROLES } from '../data/options'
 import type { AgeGroupId, Customer, IndustryId, RoleId, SmallTalk } from '../types'
-import { Chips } from '../components/ui'
 import { IndustryPicker } from '../components/IndustryPicker'
 import { TalkCard, talkToSpeech } from '../components/TalkCard'
 import { BottomSheet } from '../components/BottomSheet'
@@ -20,7 +18,8 @@ export function GeneratePage() {
 
   // 自分の業界を「相手の業界」の初期値に採用（その場で変更可能）
   const [industry, setIndustry] = useState<IndustryId>(profile?.industry ?? 'manufacturing')
-  const [ageGroup, setAgeGroup] = useState<AgeGroupId>('50s')
+  // 年代・立場は画面では選択させず、顧客選択時のみ内部的に反映する
+  const [ageGroup, setAgeGroup] = useState<AgeGroupId>(profile?.ageGroup ?? '50s')
   const [role, setRole] = useState<RoleId>('owner')
   const [customerId, setCustomerId] = useState<string>('')
   const [loading, setLoading] = useState(false)
@@ -56,6 +55,7 @@ export function GeneratePage() {
       return
     }
     setLoading(true)
+    setResults([])
     try {
       const { talks, source } = await generateSmallTalks({
         industry,
@@ -93,10 +93,9 @@ export function GeneratePage() {
       <QuotaBanner />
 
       {customer && birthdaySoon(customer.birthday) && (
-        <div className="banner warn">
-          <span>🎂</span>
+        <div className="banner gold">
           <span>
-            <b>{customer.name}さん</b>の誕生日が近づいています（{customer.birthday}
+            <b>{customer.name}様</b>のお誕生日が近づいています（{customer.birthday}
             ）。お祝いの一言を添えると好印象です。
           </span>
         </div>
@@ -104,21 +103,18 @@ export function GeneratePage() {
 
       <div className="card">
         <div className="section-label" style={{ marginTop: 0 }}>
-          相手の業界{profile && industry === profile.industry ? '（あなたと同じ業界）' : ''}
+          相手の業界{profile && industry === profile.industry ? '（自社と同業界）' : ''}
         </div>
         <IndustryPicker value={industry} onChange={setIndustry} />
-
-        <div className="section-label">年代</div>
-        <Chips options={AGE_GROUPS} value={ageGroup} onChange={setAgeGroup} />
-
-        <div className="section-label">立場・役職</div>
-        <Chips options={ROLES} value={role} onChange={setRole} />
 
         {customers.length > 0 && (
           <>
             <div className="section-label">顧客から選ぶ（任意）</div>
-            <select value={customerId} onChange={(e) => selectCustomer(customers.find((c) => c.id === e.target.value) ?? null)}>
-              <option value="">指定なし（業界・年代のみで生成）</option>
+            <select
+              value={customerId}
+              onChange={(e) => selectCustomer(customers.find((c) => c.id === e.target.value) ?? null)}
+            >
+              <option value="">指定なし（業界のみで生成）</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}（{c.company}）
@@ -141,13 +137,15 @@ export function GeneratePage() {
           onClick={onGenerate}
           disabled={loading}
         >
-          {loading ? '生成中…' : '✨ 雑談を3つ生成する'}
+          {loading ? '生成中…' : '雑談を生成する'}
         </button>
       </div>
 
-      {results.length > 0 && (
+      {loading && <LoadingCards />}
+
+      {!loading && results.length > 0 && (
         <>
-          <div className="section-label">提案された雑談（3ステップ公式）</div>
+          <div className="section-label">提案された雑談（ニュース→共感→質問）</div>
           {results.map((talk) => (
             <TalkCard
               key={talk.id}
@@ -161,11 +159,11 @@ export function GeneratePage() {
         </>
       )}
 
-      {results.length === 0 && !loading && (
+      {!loading && results.length === 0 && (
         <div className="empty">
-          <div className="big">🗣️</div>
+          <div className="empty-mark">A</div>
           <p>
-            業界・年代・立場を選んで
+            相手の業界を選んで
             <br />
             「雑談を生成する」を押してください。
           </p>
@@ -183,20 +181,38 @@ export function GeneratePage() {
   )
 }
 
+/** 生成中のローディング表示（スケルトン＋スピナー） */
+function LoadingCards() {
+  return (
+    <>
+      <div className="loading-head">
+        <span className="spinner" />
+        最新の話題を分析して作成中…
+      </div>
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="card skeleton-card">
+          <div className="sk sk-title" />
+          <div className="sk sk-line" />
+          <div className="sk sk-line" />
+          <div className="sk sk-line short" />
+        </div>
+      ))}
+    </>
+  )
+}
+
 function QuotaBanner() {
   const { quota } = useStore()
   if (quota.plan === 'premium') {
     return (
-      <div className="banner">
-        <span>✨</span>
-        <span>プレミアムプラン：雑談生成は無制限です。</span>
+      <div className="banner gold">
+        <span>PREMIUM ・ 雑談生成は無制限です。</span>
       </div>
     )
   }
   const ratio = quota.limit ? quota.used / quota.limit : 0
   return (
     <div className="banner">
-      <span>📊</span>
       <span style={{ flex: 1 }}>
         今月の生成：{quota.used} / {quota.limit} 回（残り{quota.remaining}回）
         <div className={`quota-bar ${quota.remaining! <= 3 ? 'low' : ''}`}>

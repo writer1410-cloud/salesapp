@@ -5,15 +5,19 @@ import { TalkCard, talkToSpeech } from '../components/TalkCard'
 import { BottomSheet } from '../components/BottomSheet'
 import { VoiceField } from '../components/VoiceField'
 import { Paywall } from '../components/Paywall'
+import { Icon } from '../components/Icon'
 import { isFeatureUnlocked } from '../lib/billing'
 import { speak } from '../lib/speech'
 import { formatDate } from '../lib/util'
 
 const REACTIONS: { id: SavedTalk['reaction']; label: string }[] = [
-  { id: 'good', label: '😊 好反応' },
-  { id: 'normal', label: '😐 普通' },
-  { id: 'bad', label: '😶 いまいち' },
+  { id: 'good', label: '好反応' },
+  { id: 'normal', label: '普通' },
+  { id: 'bad', label: 'いまいち' },
 ]
+
+const reactionMark = (s: SavedTalk) =>
+  s.reaction === 'good' ? '◎' : s.reaction === 'normal' ? '○' : s.reaction === 'bad' ? '△' : s.used ? '✓' : '—'
 
 export function HistoryPage() {
   const { saved, settings } = useStore()
@@ -25,7 +29,6 @@ export function HistoryPage() {
     <div className="page">
       {saved.length === 0 ? (
         <div className="empty">
-          <div className="big">📒</div>
           <p>
             生成した雑談を「ストック」すると
             <br />
@@ -35,7 +38,7 @@ export function HistoryPage() {
       ) : (
         saved.map((s) => (
           <button key={s.id} className="list-item" style={{ width: '100%', textAlign: 'left' }} onClick={() => setOpen(s)}>
-            <div className="avatar">{s.reaction === 'good' ? '😊' : s.used ? '✅' : '💬'}</div>
+            <div className="avatar mono">{reactionMark(s)}</div>
             <div className="meta">
               <div className="nm">{s.talk.topic}</div>
               <div className="sub">
@@ -44,7 +47,7 @@ export function HistoryPage() {
                 {s.memo ? ` ・ ${s.memo}` : ''}
               </div>
             </div>
-            <span style={{ color: 'var(--text-sub)' }}>›</span>
+            <Icon name="chevron" size={18} className="row-arrow" />
           </button>
         ))
       )}
@@ -103,7 +106,8 @@ function DetailSheet({
         style={{ margin: '4px 0 14px' }}
         onClick={() => (ttsLocked ? onSpeakLocked() : onSpeak(item))}
       >
-        {ttsLocked ? '🔒 読み上げ（プレミアム）' : '🔊 読み上げる'}
+        <Icon name={ttsLocked ? 'lock' : 'play'} size={16} />
+        {ttsLocked ? '読み上げ（プレミアム）' : '読み上げる'}
       </button>
 
       <div className="field">

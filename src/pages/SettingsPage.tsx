@@ -43,10 +43,10 @@ export function SettingsPage() {
       <div className="section-label">プラン</div>
       <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>
-            {settings.plan === 'premium' ? '✨ プレミアム' : '🆓 無料プラン'}
+          <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>
+            {settings.plan === 'premium' ? 'PREMIUM' : '無料プラン'}
           </span>
-          <span className={`plan-badge ${settings.plan === 'premium' ? 'premium' : ''}`} style={{ color: settings.plan === 'premium' ? '#3a2a00' : 'var(--primary)', background: settings.plan === 'premium' ? 'var(--accent)' : 'var(--primary-soft)' }}>
+          <span className={`plan-badge ${settings.plan === 'premium' ? 'premium' : ''}`}>
             {settings.plan === 'premium' ? '無制限' : `月${FREE_MONTHLY_LIMIT}回`}
           </span>
         </div>
@@ -60,8 +60,8 @@ export function SettingsPage() {
             無料プランに戻す
           </button>
         ) : (
-          <button className="btn accent block" style={{ marginTop: 8 }} onClick={() => setPaywall(true)}>
-            ✨ プレミアムにアップグレード
+          <button className="btn gold block" style={{ marginTop: 8 }} onClick={() => setPaywall(true)}>
+            プレミアムにアップグレード
           </button>
         )}
       </div>
@@ -75,7 +75,7 @@ export function SettingsPage() {
         <div className="switch">
           <span className="lbl">
             読み上げを有効にする
-            <small>{ttsUnlocked ? '雑談カードから読み上げできます' : '🔒 プレミアム限定機能'}</small>
+            <small>{ttsUnlocked ? '雑談カードから読み上げできます' : 'プレミアム限定機能'}</small>
           </span>
           <Toggle
             on={settings.ttsEnabled && ttsUnlocked}
@@ -121,7 +121,7 @@ export function SettingsPage() {
                 })
               }
             >
-              🔊 テスト再生
+              テスト再生
             </button>
           </>
         )}
@@ -221,8 +221,8 @@ function AiSection() {
           429（上限超過）が出る場合は「flash-lite」など別モデルに切り替えると回避できることがあります。
         </p>
         <div className="btn-row" style={{ marginTop: 8 }}>
-          <button className="btn sm accent" onClick={test} disabled={testing}>
-            {testing ? '接続中…' : '⚡ 接続テスト'}
+          <button className="btn sm dark" onClick={test} disabled={testing}>
+            {testing ? '接続中…' : '接続テスト'}
           </button>
           {settings.geminiApiKey && (
             <button
@@ -288,7 +288,7 @@ function ProfileSection() {
               業界：{industryLabel(base.industry)}（雑談生成の「相手の業界」の初期値になります）
             </p>
             <button className="btn sm" style={{ marginTop: 8 }} onClick={() => setOpen(true)}>
-              ✏️ 編集
+              編集
             </button>
           </>
         ) : (

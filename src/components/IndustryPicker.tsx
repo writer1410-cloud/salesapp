@@ -23,7 +23,7 @@ export function IndustryPicker({ value, onChange }: Props) {
                 className={`chip ${value === i.id ? 'active' : ''}`}
                 onClick={() => onChange(i.id)}
               >
-                {i.emoji} {i.label}
+                {i.label}
               </button>
             ))}
           </div>

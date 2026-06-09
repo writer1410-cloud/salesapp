@@ -5,18 +5,19 @@ import { GeneratePage } from './pages/GeneratePage'
 import { CustomersPage } from './pages/CustomersPage'
 import { HistoryPage } from './pages/HistoryPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { Icon, type IconName } from './components/Icon'
 
 type Tab = 'generate' | 'customers' | 'history' | 'settings'
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'generate', label: '雑談', icon: '💬' },
-  { id: 'customers', label: '顧客', icon: '👥' },
-  { id: 'history', label: '履歴', icon: '📒' },
-  { id: 'settings', label: '設定', icon: '⚙️' },
+const TABS: { id: Tab; label: string; icon: IconName }[] = [
+  { id: 'generate', label: '雑談', icon: 'talk' },
+  { id: 'customers', label: '顧客', icon: 'people' },
+  { id: 'history', label: '履歴', icon: 'archive' },
+  { id: 'settings', label: '設定', icon: 'settings' },
 ]
 
 const TITLES: Record<Tab, string> = {
-  generate: '雑談を作る',
+  generate: 'TALK ASSIST',
   customers: '顧客リスト',
   history: 'ストック履歴',
   settings: '設定',
@@ -39,11 +40,9 @@ export default function App() {
   return (
     <>
       <header className="app-header">
-        <h1>
-          <span>🗣️</span> {TITLES[tab]}
-        </h1>
+        <h1>{TITLES[tab]}</h1>
         <span className={`plan-badge ${settings.plan === 'premium' ? 'premium' : ''}`}>
-          {settings.plan === 'premium' ? '✨ PREMIUM' : 'FREE'}
+          {settings.plan === 'premium' ? 'PREMIUM' : 'FREE'}
         </span>
       </header>
 
@@ -55,7 +54,7 @@ export default function App() {
       <nav className="tabbar">
         {TABS.map((t) => (
           <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => setTab(t.id)}>
-            <span className="ic">{t.icon}</span>
+            <Icon name={t.icon} size={22} className="ic" />
             {t.label}
           </button>
         ))}

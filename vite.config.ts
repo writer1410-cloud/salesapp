@@ -16,8 +16,8 @@ export default defineConfig(({ command }) => ({
         short_name: '雑談アシスト',
         description:
           'ルート営業向け。相手の年代・業界に合わせたニュース雑談を3ステップ公式で提案します。',
-        theme_color: '#14233c',
-        background_color: '#eceef1',
+        theme_color: '#16181d',
+        background_color: '#f1f1f2',
         display: 'standalone',
         orientation: 'portrait',
         lang: 'ja',

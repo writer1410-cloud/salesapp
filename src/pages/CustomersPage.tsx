@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store'
-import { ageLabel, industryEmoji, industryLabel } from '../data/options'
+import { ageLabel, industryLabel } from '../data/options'
 import type { Customer } from '../types'
 import { CustomerDetail } from './CustomerDetail'
+import { Icon } from '../components/Icon'
 import { uid } from '../lib/util'
+
+const initial = (c: Customer) => (c.name || c.company || '?').trim().charAt(0).toUpperCase()
 
 const UNGROUPED = '未分類'
 
@@ -55,12 +58,12 @@ export function CustomersPage() {
         style={{ marginBottom: 14 }}
         onClick={() => setDetail({ customer: emptyCustomer(settings.profile?.industry ?? 'manufacturing'), isNew: true })}
       >
-        ＋ 顧客を追加
+        <Icon name="plus" size={17} />
+        顧客を追加
       </button>
 
       {customers.length === 0 ? (
         <div className="empty">
-          <div className="big">👥</div>
           <p>
             顧客を登録すると、出身地・誕生日などを反映した
             <br />
@@ -85,7 +88,7 @@ export function CustomersPage() {
 
           {grouped.map(([group, list]) => (
             <div key={group}>
-              <div className="group-header">📁 {group}（{list.length}）</div>
+              <div className="group-header">{group}　<span>{list.length}</span></div>
               {list.map((c) => (
                 <button
                   key={c.id}
@@ -93,7 +96,7 @@ export function CustomersPage() {
                   style={{ width: '100%', textAlign: 'left' }}
                   onClick={() => setDetail({ customer: c, isNew: false })}
                 >
-                  <div className="avatar">{industryEmoji(c.industry)}</div>
+                  <div className="avatar">{initial(c)}</div>
                   <div className="meta">
                     <div className="nm">
                       {c.name || '（名称未設定）'}
@@ -105,7 +108,7 @@ export function CustomersPage() {
                       {c.hobbies && `・${c.hobbies}`}
                     </div>
                   </div>
-                  <span style={{ color: 'var(--text-sub)' }}>›</span>
+                  <Icon name="chevron" size={18} className="row-arrow" />
                 </button>
               ))}
             </div>

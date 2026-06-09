@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
 import { useStore } from '../store'
-import { AGE_GROUPS, ROLES, industryEmoji } from '../data/options'
+import { AGE_GROUPS, ROLES } from '../data/options'
 import type { Customer, DiaryEntry, SavedTalk } from '../types'
 import { Chips } from '../components/ui'
 import { IndustryPicker } from '../components/IndustryPicker'
 import { VoiceField } from '../components/VoiceField'
 import { TalkCard } from '../components/TalkCard'
+import { Icon } from '../components/Icon'
 import { summarizeNotes } from '../lib/ai'
 import { formatYMD, todayYMD, uid } from '../lib/util'
 
@@ -44,12 +45,10 @@ export function CustomerDetail({
     <div className="detail-screen">
       <div className="detail-head">
         <button className="back" onClick={onClose} aria-label="戻る">
-          ‹
+          <Icon name="back" size={24} />
         </button>
         <div className="ti">
-          <div className="nm">
-            {industryEmoji(current.industry)} {current.name || '新しい顧客'}
-          </div>
+          <div className="nm">{current.name || '新しい顧客'}</div>
           <div className="sub">
             {current.company || '会社未設定'}
             {current.group ? ` ・ ${current.group}` : ''}
@@ -64,7 +63,7 @@ export function CustomerDetail({
           </button>
         ))}
       </div>
-      <div className="swipe-hint">← 左右にスワイプして切り替え →</div>
+      <div className="swipe-hint">左右にスワイプして切り替え</div>
 
       <div className="detail-pager" ref={pagerRef} onScroll={onScroll}>
         <div className="detail-panel">
@@ -92,7 +91,6 @@ export function CustomerDetail({
 function NeedSave({ message }: { message: string }) {
   return (
     <div className="empty">
-      <div className="big">📝</div>
       <p>{message}</p>
     </div>
   )
@@ -155,7 +153,6 @@ function ProfilePanel({
   return (
     <>
       <div className="banner">
-        <span>🪄</span>
         <span>
           箇条書き・話し言葉・<b>音声入力</b>でメモすると、AIが各項目に振り分けます。
         </span>
@@ -169,8 +166,8 @@ function ProfilePanel({
           rows={3}
           onError={showToast}
         />
-        <button className="btn accent sm" style={{ marginTop: 6 }} onClick={runSummarize} disabled={summarizing}>
-          {summarizing ? '整理中…' : '🪄 AIで整理して反映'}
+        <button className="btn dark sm" style={{ marginTop: 6 }} onClick={runSummarize} disabled={summarizing}>
+          {summarizing ? '整理中…' : 'AIで整理して反映'}
         </button>
       </div>
 
@@ -296,7 +293,8 @@ function DiaryPanel({ customerId }: { customerId: string }) {
           />
         </div>
         <button className="btn primary block" onClick={add}>
-          ＋ 記録する
+          <Icon name="plus" size={16} />
+          記録する
         </button>
       </div>
 
@@ -305,13 +303,12 @@ function DiaryPanel({ customerId }: { customerId: string }) {
       </div>
       {entries.length === 0 ? (
         <div className="empty">
-          <div className="big">📔</div>
           <p>まだ記録がありません。商談後に雑談の内容を残しましょう。</p>
         </div>
       ) : (
         entries.map((e) => (
           <div key={e.id} className="diary-entry">
-            <div className="date">🗓 {formatYMD(e.date)}</div>
+            <div className="date">{formatYMD(e.date)}</div>
             <div className="body">{e.content}</div>
             <button
               className="del"
@@ -337,7 +334,6 @@ function StockPanel({ customerId }: { customerId: string }) {
   if (items.length === 0) {
     return (
       <div className="empty">
-        <div className="big">💬</div>
         <p>
           この顧客にひも付けてストックした雑談が
           <br />
@@ -363,9 +359,8 @@ function StockRow({ item, open, onToggle }: { item: SavedTalk; open: boolean; on
   return (
     <div className={`stock-item ${open ? 'open' : ''}`}>
       <button className="head" onClick={onToggle}>
-        <span>💬</span>
         <span className="ttl">{item.talk.topic}</span>
-        <span className="arr">›</span>
+        <Icon name="chevron" size={16} className="arr" />
       </button>
       {open && (
         <div className="full">

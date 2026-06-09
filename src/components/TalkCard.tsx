@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { SmallTalk } from '../types'
 import { newsSearchUrl } from '../types'
+import { Icon } from './Icon'
 
 interface Props {
   talk: SmallTalk
@@ -16,14 +17,15 @@ export function TalkCard({ talk, onSave, onSpeak, ttsLocked, saved, compact }: P
   return (
     <div className="card">
       <div className="talk-topic">
-        <span>💬 {talk.topic}</span>
-        <span className={`src ${talk.source}`}>{talk.source === 'ai' ? 'AI' : 'テンプレ'}</span>
+        <span>{talk.topic}</span>
+        <span className={`src ${talk.source}`}>{talk.source === 'ai' ? 'AI' : 'TEMPLATE'}</span>
       </div>
 
-      <Step no="1" kind="ニュース・話題" text={talk.news}>
+      <Step no="01" kind="ニュース・話題" text={talk.news}>
         {talk.sourceUrl ? (
           <a className="news-link" href={talk.sourceUrl} target="_blank" rel="noopener noreferrer">
-            📰 {talk.sourceTitle ? clip(talk.sourceTitle, 34) : '元記事を読む'}
+            <Icon name="external" size={14} />
+            {talk.sourceTitle ? clip(talk.sourceTitle, 34) : '元記事を読む'}
           </a>
         ) : (
           talk.sourceQuery && (
@@ -33,21 +35,19 @@ export function TalkCard({ talk, onSave, onSpeak, ttsLocked, saved, compact }: P
               target="_blank"
               rel="noopener noreferrer"
             >
-              🔗 関連ニュースを見る
+              <Icon name="search" size={14} />
+              関連ニュースを見る
             </a>
           )
         )}
       </Step>
-      <Step no="2" kind="主観・共感" text={talk.empathy} />
-      <Step no="3" kind="質問" text={talk.question} />
+      <Step no="02" kind="主観・共感" text={talk.empathy} />
+      <Step no="03" kind="質問" text={talk.question} />
 
       {talk.trivia && (
         <div className="trivia">
-          <span>💡</span>
-          <span>
-            <b>豆知識：</b>
-            {talk.trivia}
-          </span>
+          <span className="trivia-label">豆知識</span>
+          <span>{talk.trivia}</span>
         </div>
       )}
 
@@ -55,12 +55,14 @@ export function TalkCard({ talk, onSave, onSpeak, ttsLocked, saved, compact }: P
         <div className="talk-actions">
           {onSpeak && (
             <button className="btn sm" onClick={onSpeak}>
-              {ttsLocked ? '🔒 読み上げ' : '🔊 読み上げ'}
+              <Icon name={ttsLocked ? 'lock' : 'play'} size={16} />
+              読み上げ
             </button>
           )}
           {onSave && (
             <button className="btn sm primary" onClick={onSave} disabled={saved}>
-              {saved ? '✓ 保存済み' : '＋ ストック'}
+              <Icon name={saved ? 'check' : 'plus'} size={16} />
+              {saved ? '保存済み' : 'ストック'}
             </button>
           )}
         </div>
