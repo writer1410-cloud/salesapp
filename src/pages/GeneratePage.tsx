@@ -145,7 +145,7 @@ export function GeneratePage() {
 
       {!loading && results.length > 0 && (
         <>
-          <div className="section-label">提案された雑談（ニュース→共感→質問）</div>
+          <div className="section-label">提案された雑談（直近の話題・3件目はSNSトレンド）</div>
           {results.map((talk) => (
             <TalkCard
               key={talk.id}
