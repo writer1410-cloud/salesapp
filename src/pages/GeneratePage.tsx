@@ -95,6 +95,14 @@ export function GeneratePage() {
 
   return (
     <div className="page">
+      <div className="gen-hero">
+        <div className="gen-hero-kicker">ROUTE SALES TALK</div>
+        <h2 className="gen-hero-title">今日の商談、何から話す？</h2>
+        <p className="gen-hero-sub">
+          相手の業界に合わせ、最新の話題から自然な雑談を3つご用意します。
+        </p>
+      </div>
+
       <QuotaBanner />
 
       {customer && birthdaySoon(customer.birthday) && (

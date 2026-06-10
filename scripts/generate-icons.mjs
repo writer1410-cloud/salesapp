@@ -38,51 +38,74 @@ function hex(c) {
   return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)]
 }
 
+function lerp(a, b, t) {
+  return Math.round(a + (b - a) * t)
+}
+
 function buildPng(size) {
-  const bg = hex('#16181d')
+  const bgTop = hex('#24272e')
+  const bgBottom = hex('#121317')
   const fg = hex('#f3f4f5')
-  const accent = hex('#b08d3f')
+  const dot = hex('#16181d')
+  const gold = hex('#cda758')
+  const r = size * 0.22
+
+  // 角丸ラウンド矩形の内側判定（pad だけ内側に縮めた形）
+  const inRound = (x, y, pad) => {
+    const lo = pad
+    const hi = size - pad
+    if (x < lo || y < lo || x > hi || y > hi) return false
+    const rr = Math.max(0, r - pad)
+    const cxL = lo + rr,
+      cxR = hi - rr,
+      cyT = lo + rr,
+      cyB = hi - rr
+    if (x < cxL && y < cyT) return (x - cxL) ** 2 + (y - cyT) ** 2 <= rr * rr
+    if (x > cxR && y < cyT) return (x - cxR) ** 2 + (y - cyT) ** 2 <= rr * rr
+    if (x < cxL && y > cyB) return (x - cxL) ** 2 + (y - cyB) ** 2 <= rr * rr
+    if (x > cxR && y > cyB) return (x - cxR) ** 2 + (y - cyB) ** 2 <= rr * rr
+    return true
+  }
+
   const px = (x, y) => {
-    // 角丸背景
-    const r = size * 0.22
-    const inside =
-      x >= r || y >= r
-        ? true
-        : (x - r) ** 2 + (y - r) ** 2 <= r * r
-    const insideTR = x <= size - r || y >= r ? true : (x - (size - r)) ** 2 + (y - r) ** 2 <= r * r
-    const insideBL = x >= r || y <= size - r ? true : (x - r) ** 2 + (y - (size - r)) ** 2 <= r * r
-    const insideBR =
-      x <= size - r || y <= size - r
-        ? true
-        : (x - (size - r)) ** 2 + (y - (size - r)) ** 2 <= r * r
-    if (!(inside && insideTR && insideBL && insideBR)) return [0, 0, 0, 0]
+    if (!inRound(x, y, 0)) return [0, 0, 0, 0]
+    // 縦グラデーション背景
+    const t = y / size
+    const bg = [
+      lerp(bgTop[0], bgBottom[0], t),
+      lerp(bgTop[1], bgBottom[1], t),
+      lerp(bgTop[2], bgBottom[2], t),
+    ]
+
+    // 細いゴールドの縁取り
+    const border = size * 0.022
+    if (!inRound(x, y, border)) return [...gold, 150]
 
     // 吹き出し本体
-    const bx0 = size * 0.2,
-      bx1 = size * 0.8,
-      by0 = size * 0.26,
-      by1 = size * 0.62
+    const bx0 = size * 0.22,
+      bx1 = size * 0.78,
+      by0 = size * 0.28,
+      by1 = size * 0.6
     if (x >= bx0 && x <= bx1 && y >= by0 && y <= by1) {
-      // 3つのドット
       const cy = (by0 + by1) / 2
       const dots = [0.36, 0.5, 0.64]
-      for (const d of dots) {
-        const cx = size * d
-        if ((x - cx) ** 2 + (y - cy) ** 2 <= (size * 0.045) ** 2) return [...bg, 255]
+      for (let i = 0; i < dots.length; i++) {
+        const cx = size * dots[i]
+        if ((x - cx) ** 2 + (y - cy) ** 2 <= (size * 0.045) ** 2) {
+          return i === 2 ? [...gold, 255] : [...dot, 255]
+        }
       }
       return [...fg, 255]
     }
     // 吹き出しのしっぽ
     if (
-      x >= size * 0.3 &&
-      x <= size * 0.45 &&
+      x >= size * 0.32 &&
+      x <= size * 0.46 &&
       y >= by1 &&
       y <= by1 + size * 0.12 &&
-      y - by1 <= (x - size * 0.3) * 0.8
+      y - by1 <= (x - size * 0.32) * 0.85
     )
       return [...fg, 255]
-    // アクセントの星（右下）
-    if ((x - size * 0.74) ** 2 + (y - size * 0.72) ** 2 <= (size * 0.06) ** 2) return [...accent, 255]
     return [...bg, 255]
   }
 

@@ -312,15 +312,56 @@ textarea:focus {
 }
 
 /* ---- 雑談カード（3ステップ） ---- */
+.talk-card {
+  position: relative;
+  overflow: hidden;
+}
+.talk-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--primary), var(--silver-d));
+}
+.talk-card.is-sns::before {
+  background: linear-gradient(180deg, #d8b863, var(--gold-d));
+}
+.talk-card {
+  padding-left: 18px;
+}
 .talk-topic {
   font-weight: 800;
   font-size: 1.06rem;
-  line-height: 1.4;
+  line-height: 1.45;
   letter-spacing: 0.01em;
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+.talk-topic .topic-text {
+  flex: 1;
+  min-width: 0;
+}
+.topic-tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  vertical-align: 2px;
+  margin-right: 7px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(180deg, #2b2f37, #15171c);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.topic-tag.sns {
+  color: #2a2008;
+  background: linear-gradient(145deg, #e3c878, var(--gold));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 .talk-topic .src {
   margin-left: auto;
@@ -935,6 +976,40 @@ textarea:focus {
   border: 1px solid var(--gold-d);
   border-radius: 3px;
   padding: 3px 9px;
+}
+
+/* ---- 生成画面ヒーロー（マストヘッド） ---- */
+.gen-hero {
+  padding: 6px 2px 16px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.gen-hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 54px;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+.gen-hero-kicker {
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  color: var(--silver-d);
+}
+.gen-hero-title {
+  font-size: 1.34rem;
+  line-height: 1.35;
+  margin: 6px 0 4px;
+  letter-spacing: 0.01em;
+}
+.gen-hero-sub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-sub);
 }
 
 /* ---- 結果ヘッダー＋鮮度バッジ ---- */

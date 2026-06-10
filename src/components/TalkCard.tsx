@@ -14,10 +14,15 @@ interface Props {
 
 /** 3ステップ公式（ニュース→主観・共感→質問）＋豆知識を表示するカード */
 export function TalkCard({ talk, onSave, onSpeak, ttsLocked, saved, compact }: Props) {
+  const { tag, title } = splitTopic(talk.topic)
+  const isSns = !!tag && tag.includes('SNS')
   return (
-    <div className="card">
+    <div className={`card talk-card${isSns ? ' is-sns' : ''}`}>
       <div className="talk-topic">
-        <span>{talk.topic}</span>
+        <span className="topic-text">
+          {tag && <span className={`topic-tag${isSns ? ' sns' : ''}`}>{tag}</span>}
+          {title}
+        </span>
         <span className={`src ${talk.source}`}>{talk.source === 'ai' ? 'AI' : 'TEMPLATE'}</span>
       </div>
 
@@ -97,6 +102,13 @@ function Step({
 
 function clip(s: string, n: number): string {
   return s.length > n ? s.slice(0, n) + '…' : s
+}
+
+/** 先頭の【...】タグを本文から分離する（例: 「【SNSで話題】新作スイーツ」） */
+function splitTopic(topic: string): { tag?: string; title: string } {
+  const m = topic.match(/^\s*[【\[]([^】\]]+)[】\]]\s*(.*)$/)
+  if (m) return { tag: m[1].trim(), title: m[2].trim() || topic }
+  return { title: topic }
 }
 
 /** 雑談全文を読み上げ用の1テキストに連結 */
