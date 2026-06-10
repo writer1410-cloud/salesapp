@@ -63,6 +63,18 @@ npm run preview  # ビルド結果のプレビュー
 - Web：Stripe などのサブスク決済
 - **購入レシートの検証はサーバー側で行い**、検証結果をもとにプラン（無制限・読み上げ解放）を付与します。
 
+## 配信・Google Play リリース
+
+本アプリはルート直下配信（`base: '/'`）の PWA です。Cloudflare Pages 等に `dist/` を
+配信し、TWA としてラップして Google Play に出します。手順とストア掲載文は以下を参照：
+
+- `docs/RELEASE-PLAY.md` … PWA→TWA でのリリース手順（PWABuilder 利用）
+- `docs/store-listing-ja.md` … ストア掲載文・データセーフティ回答例
+- `public/privacy.html` … プライバシーポリシー（Play 必須・`/privacy.html` で公開）
+- `public/.well-known/assetlinks.json` … TWA 検証用（署名鍵の SHA-256 を後から記入）
+
+アイコン（通常＋マスカブル）の生成：`node scripts/generate-icons.mjs`
+
 ## ディレクトリ
 
 ```

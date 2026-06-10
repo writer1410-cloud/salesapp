@@ -42,13 +42,17 @@ function lerp(a, b, t) {
   return Math.round(a + (b - a) * t)
 }
 
-function buildPng(size) {
+// maskable=true: ランチャー側でマスクされる前提の全面塗り版（角丸・縁取りなし、
+// エンブレムをセーフゾーン内に収める）。Google Play / Android で必須。
+function buildPng(size, { maskable = false } = {}) {
   const bgTop = hex('#24272e')
   const bgBottom = hex('#121317')
   const fg = hex('#f3f4f5')
   const dot = hex('#16181d')
   const gold = hex('#cda758')
   const r = size * 0.22
+  // マスカブル版はエンブレムを中央へ縮めて安全領域に収める
+  const emScale = maskable ? 0.78 : 1
 
   // 角丸ラウンド矩形の内側判定（pad だけ内側に縮めた形）
   const inRound = (x, y, pad) => {
@@ -68,7 +72,7 @@ function buildPng(size) {
   }
 
   const px = (x, y) => {
-    if (!inRound(x, y, 0)) return [0, 0, 0, 0]
+    if (!maskable && !inRound(x, y, 0)) return [0, 0, 0, 0]
     // 縦グラデーション背景
     const t = y / size
     const bg = [
@@ -77,21 +81,28 @@ function buildPng(size) {
       lerp(bgTop[2], bgBottom[2], t),
     ]
 
-    // 細いゴールドの縁取り
-    const border = size * 0.022
-    if (!inRound(x, y, border)) return [...gold, 150]
+    // 細いゴールドの縁取り（通常アイコンのみ）
+    if (!maskable) {
+      const border = size * 0.022
+      if (!inRound(x, y, border)) return [...gold, 150]
+    }
+
+    // エンブレム座標へ変換（中央を基準に emScale で縮小）
+    const c = size / 2
+    const ex = (x - c) / emScale + c
+    const ey = (y - c) / emScale + c
 
     // 吹き出し本体
     const bx0 = size * 0.22,
       bx1 = size * 0.78,
       by0 = size * 0.28,
       by1 = size * 0.6
-    if (x >= bx0 && x <= bx1 && y >= by0 && y <= by1) {
+    if (ex >= bx0 && ex <= bx1 && ey >= by0 && ey <= by1) {
       const cy = (by0 + by1) / 2
       const dots = [0.36, 0.5, 0.64]
       for (let i = 0; i < dots.length; i++) {
         const cx = size * dots[i]
-        if ((x - cx) ** 2 + (y - cy) ** 2 <= (size * 0.045) ** 2) {
+        if ((ex - cx) ** 2 + (ey - cy) ** 2 <= (size * 0.045) ** 2) {
           return i === 2 ? [...gold, 255] : [...dot, 255]
         }
       }
@@ -99,11 +110,11 @@ function buildPng(size) {
     }
     // 吹き出しのしっぽ
     if (
-      x >= size * 0.32 &&
-      x <= size * 0.46 &&
-      y >= by1 &&
-      y <= by1 + size * 0.12 &&
-      y - by1 <= (x - size * 0.32) * 0.85
+      ex >= size * 0.32 &&
+      ex <= size * 0.46 &&
+      ey >= by1 &&
+      ey <= by1 + size * 0.12 &&
+      ey - by1 <= (ex - size * 0.32) * 0.85
     )
       return [...fg, 255]
     return [...bg, 255]
@@ -136,7 +147,13 @@ function buildPng(size) {
 }
 
 for (const size of [192, 512]) {
+  // 通常（purpose: any）アイコン
   writeFileSync(resolve(publicDir, `pwa-${size}x${size}.png`), buildPng(size))
+  // マスカブル（purpose: maskable）アイコン
+  writeFileSync(
+    resolve(publicDir, `pwa-maskable-${size}x${size}.png`),
+    buildPng(size, { maskable: true })
+  )
 }
 writeFileSync(resolve(publicDir, 'apple-touch-icon.png'), buildPng(180))
-console.log('PWA icons generated.')
+console.log('PWA icons generated (any + maskable).')

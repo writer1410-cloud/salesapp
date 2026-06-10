@@ -143,6 +143,11 @@ export function SettingsPage() {
       </div>
 
       <p className="mini-note" style={{ textAlign: 'center', marginTop: 18 }}>
+        <a href="/privacy.html" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gold-d)' }}>
+          プライバシーポリシー
+        </a>
+      </p>
+      <p className="mini-note" style={{ textAlign: 'center', marginTop: 4 }}>
         営業雑談アシスタント v1.0 ・ ニュース×3ステップ公式
       </p>
 
