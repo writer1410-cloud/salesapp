@@ -7,6 +7,7 @@ import { uid } from './util'
 export interface GenerateResult {
   talks: SmallTalk[]
   source: 'ai' | 'template'
+  live?: boolean // Web検索連動(最新)で生成できたか
 }
 
 /** AI接続の選択肢 */
@@ -66,7 +67,11 @@ export async function generateSmallTalks(
         model: geminiModel,
       })
       const talks = raw.map((t) => normalize(t, gen))
-      if (talks.length) return { talks, source: 'ai' }
+      if (talks.length) {
+        // 実記事URLが付いていれば Web検索連動(最新)で生成できている
+        const live = talks.some((t) => !!t.sourceUrl)
+        return { talks, source: 'ai', live }
+      }
       throw new Error('empty')
     } catch (e) {
       console.warn('Gemini生成に失敗したためテンプレート生成にフォールバックします:', e)

@@ -57,7 +57,7 @@ export function GeneratePage() {
     setLoading(true)
     setResults([])
     try {
-      const { talks, source } = await generateSmallTalks({
+      const { talks, source, live } = await generateSmallTalks({
         industry,
         ageGroup,
         role,
@@ -72,6 +72,8 @@ export function GeneratePage() {
       if (store.usage.plan === 'free') store.consumeGeneration()
       if (source === 'template' && (settings.apiBaseUrl || settings.geminiApiKey)) {
         showToast('AI接続に失敗。テンプレートで生成しました')
+      } else if (source === 'ai' && settings.geminiApiKey && !live) {
+        showToast('Web検索が使えず、最新でない話題で生成しました')
       }
     } catch {
       showToast('生成に失敗しました')

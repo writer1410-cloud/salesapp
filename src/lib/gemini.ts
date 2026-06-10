@@ -127,27 +127,35 @@ async function geminiGroundedTalks(
   key: string,
   model: string,
 ): Promise<RawTalk[]> {
-  const res = await fetch(ENDPOINT(model || DEFAULT_GEMINI_MODEL, key), {
+  const useModel = model || DEFAULT_GEMINI_MODEL
+  const generationConfig: Record<string, unknown> = { maxOutputTokens: 8192, temperature: 1 }
+  // 2.5系は既定の「思考」で出力トークンを使い切り空応答になりやすいので抑制する
+  if (useModel.includes('2.5')) generationConfig.thinkingConfig = { thinkingBudget: 0 }
+
+  const res = await fetch(ENDPOINT(useModel, key), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: system }] },
       contents: [{ role: 'user', parts: [{ text: user }] }],
       tools: [{ google_search: {} }],
-      generationConfig: { maxOutputTokens: 4000 },
+      generationConfig,
     }),
   })
   if (!res.ok) {
     if (res.status === 429) {
       throw new Error('429 無料枠の上限/レート制限です。少し待つか、別モデルをお試しください。')
     }
-    throw new Error(`Gemini API error ${res.status}`)
+    throw new Error(`Gemini API error ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`)
   }
   const data = await res.json()
   const cand = data?.candidates?.[0]
   const text = (cand?.content?.parts ?? [])
     .map((p: { text?: string }) => p.text ?? '')
     .join('')
+  if (!text.trim()) {
+    throw new Error(`Geminiの応答が空でした (finishReason: ${cand?.finishReason ?? '不明'})`)
+  }
   const parsed = extractJson(text) as { talks?: RawTalk[] }
   const talks = parsed.talks ?? []
 
