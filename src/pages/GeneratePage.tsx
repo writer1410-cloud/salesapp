@@ -24,6 +24,7 @@ export function GeneratePage() {
   const [customerId, setCustomerId] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<SmallTalk[]>([])
+  const [resultLive, setResultLive] = useState<boolean | null>(null)
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
 
   const [paywall, setPaywall] = useState<{ open: boolean; reason?: string }>({ open: false })
@@ -68,6 +69,8 @@ export function GeneratePage() {
         geminiModel: settings.geminiModel || undefined,
       })
       setResults(talks)
+      // AI生成かつWeb検索連動できた時のみ「最新」表示。テンプレ時はバッジ非表示。
+      setResultLive(source === 'ai' ? !!live : null)
       setSavedIds(new Set())
       if (store.usage.plan === 'free') store.consumeGeneration()
       if (source === 'template' && (settings.apiBaseUrl || settings.geminiApiKey)) {
@@ -147,7 +150,15 @@ export function GeneratePage() {
 
       {!loading && results.length > 0 && (
         <>
-          <div className="section-label">提案された雑談（直近の話題・3件目はSNSトレンド）</div>
+          <div className="result-head">
+            <div className="section-label">提案された雑談（直近の話題・3件目はSNSトレンド）</div>
+            {resultLive !== null && (
+              <span className={`fresh-badge ${resultLive ? 'live' : 'stale'}`}>
+                <span className="dot" />
+                {resultLive ? '最新Web検索' : '検索未使用'}
+              </span>
+            )}
+          </div>
           {results.map((talk) => (
             <TalkCard
               key={talk.id}

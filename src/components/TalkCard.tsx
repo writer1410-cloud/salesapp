@@ -23,7 +23,7 @@ export function TalkCard({ talk, onSave, onSpeak, ttsLocked, saved, compact }: P
 
       <Step no="01" kind="ニュース・話題" text={talk.news}>
         {talk.sourceUrl ? (
-          <a className="news-link" href={talk.sourceUrl} target="_blank" rel="noopener noreferrer">
+          <a className="news-link src-live" href={talk.sourceUrl} target="_blank" rel="noopener noreferrer">
             <Icon name="external" size={14} />
             {talk.sourceTitle ? clip(talk.sourceTitle, 34) : '元記事を読む'}
           </a>
