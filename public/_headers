@@ -1,0 +1,5 @@
+# Cloudflare Pages 用ヘッダ設定
+# assetlinks.json は application/json で、キャッシュさせず返す（TWA検証の取りこぼし防止）
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: no-cache
