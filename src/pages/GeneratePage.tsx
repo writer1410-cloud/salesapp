@@ -7,6 +7,7 @@ import { BottomSheet } from '../components/BottomSheet'
 import { VoiceField } from '../components/VoiceField'
 import { Paywall } from '../components/Paywall'
 import { generateSmallTalks } from '../lib/ai'
+import { API_BASE_URL } from '../lib/config'
 import { isFeatureUnlocked } from '../lib/billing'
 import { speak } from '../lib/speech'
 import { birthdaySoon, uid } from '../lib/util'
@@ -64,19 +65,15 @@ export function GeneratePage() {
         role,
         customer,
         count: 3,
-        apiBaseUrl: settings.apiBaseUrl || undefined,
-        geminiApiKey: settings.geminiApiKey || undefined,
-        geminiModel: settings.geminiModel || undefined,
+        apiBaseUrl: API_BASE_URL || undefined,
       })
       setResults(talks)
       // AI生成かつWeb検索連動できた時のみ「最新」表示。テンプレ時はバッジ非表示。
       setResultLive(source === 'ai' ? !!live : null)
       setSavedIds(new Set())
       if (store.usage.plan === 'free') store.consumeGeneration()
-      if (source === 'template' && (settings.apiBaseUrl || settings.geminiApiKey)) {
+      if (source === 'template' && API_BASE_URL) {
         showToast('AI接続に失敗。テンプレートで生成しました')
-      } else if (source === 'ai' && settings.geminiApiKey && !live) {
-        showToast('Web検索が使えず、最新でない話題で生成しました')
       }
     } catch {
       showToast('生成に失敗しました')

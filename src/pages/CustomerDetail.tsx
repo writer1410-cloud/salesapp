@@ -8,6 +8,7 @@ import { VoiceField } from '../components/VoiceField'
 import { TalkCard } from '../components/TalkCard'
 import { Icon } from '../components/Icon'
 import { summarizeNotes } from '../lib/ai'
+import { API_BASE_URL } from '../lib/config'
 import { formatYMD, todayYMD, uid } from '../lib/util'
 
 const TABS = ['プロフィール', '雑談メモ', 'ストック'] as const
@@ -106,7 +107,7 @@ function ProfilePanel({
   isNew: boolean
   onClose: () => void
 }) {
-  const { customers, saveCustomer, removeCustomer, settings, showToast } = useStore()
+  const { customers, saveCustomer, removeCustomer, showToast } = useStore()
   const [draft, setDraft] = useState<Customer>(customer)
   const [rawNotes, setRawNotes] = useState('')
   const [summarizing, setSummarizing] = useState(false)
@@ -123,9 +124,7 @@ function ProfilePanel({
     setSummarizing(true)
     try {
       const { result, source } = await summarizeNotes(rawNotes, {
-        apiBaseUrl: settings.apiBaseUrl || undefined,
-        geminiApiKey: settings.geminiApiKey || undefined,
-        geminiModel: settings.geminiModel || undefined,
+        apiBaseUrl: API_BASE_URL || undefined,
       })
       setDraft((d) => ({ ...d, ...stripEmpty(result), updatedAt: Date.now() }))
       showToast(source === 'ai' ? 'AIが整理して反映しました' : 'メモを整理して反映しました')

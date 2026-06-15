@@ -120,18 +120,7 @@ export interface Settings {
   ttsEnabled: boolean
   ttsRate: number // 読み上げ速度
   ttsVoiceURI: string // 選択した音声
-  apiBaseUrl: string // バックエンド(Edge Function)のURL。空ならテンプレート生成。
-  geminiApiKey: string // 簡易モード: ブラウザから直接Geminiを呼ぶための端末内保存キー
-  geminiModel: string // 使用するGeminiモデル（空なら既定）
 }
-
-export const GEMINI_MODELS: { id: string; label: string }[] = [
-  { id: 'gemini-2.5-flash', label: 'gemini-2.5-flash（推奨・高性能）' },
-  { id: 'gemini-2.0-flash', label: 'gemini-2.0-flash（標準）' },
-  { id: 'gemini-2.0-flash-lite', label: 'gemini-2.0-flash-lite（軽量）' },
-  { id: 'gemini-1.5-flash', label: 'gemini-1.5-flash（旧・予備）' },
-]
-export const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash'
 
 export const FREE_MONTHLY_LIMIT = 10
 
