@@ -17,7 +17,7 @@ const TABS: { id: Tab; label: string; icon: IconName }[] = [
 ]
 
 const TITLES: Record<Tab, string> = {
-  generate: 'TALK ASSIST',
+  generate: 'ひとネタ',
   customers: '顧客リスト',
   history: 'ストック履歴',
   settings: '設定',

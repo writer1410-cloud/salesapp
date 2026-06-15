@@ -42,8 +42,8 @@
 3. スコア確認後、**Package For Stores → Android** を選択
 4. パッケージ設定（重要・控えておく）：
    - **Package ID（applicationId）**: 例 `app.pages.salesapp.twa`（後から変えられないので慎重に）
-   - **App name**: 営業雑談アシスタント
-   - **Launcher name**: 雑談アシスト
+   - **App name**: ひとネタ｜営業の雑談ネタ
+   - **Launcher name**: ひとネタ
    - **Signing key**: 「Create new」を選び、生成される **`signing.keystore` とパスワード控え** を**必ず保管**（紛失すると以後アップデート不可）
 5. **Generate** → ZIP をダウンロード。中に以下が入っています：
    - `app-release-bundle.aab` … Play にアップロードする本体
@@ -78,7 +78,7 @@ PWABuilder が出力した `assetlinks.json`（`package_name` と `sha256_cert_f
 ## 4. Play Console で公開
 
 1. [Google Play Console](https://play.google.com/console)（開発者登録 $25・一回）にログイン
-2. **アプリを作成** → アプリ名「営業雑談アシスタント」、言語「日本語」、無料
+2. **アプリを作成** → アプリ名「ひとネタ｜営業の雑談ネタ」、言語「日本語」、無料
 3. 左メニューに沿って入力（`docs/store-listing-ja.md` の文面を使用）：
    - **ストアの設定 → ストアの掲載情報**：アプリ名 / 簡単な説明 / 詳しい説明 / アイコン(512) / 機能グラフィック(1024×500) / スクリーンショット(最低2枚)
    - **プライバシーポリシー**：`https://<本番URL>/privacy.html`

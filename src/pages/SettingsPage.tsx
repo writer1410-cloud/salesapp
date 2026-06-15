@@ -148,7 +148,7 @@ export function SettingsPage() {
         </a>
       </p>
       <p className="mini-note" style={{ textAlign: 'center', marginTop: 4 }}>
-        営業雑談アシスタント v1.0 ・ ニュース×3ステップ公式
+        ひとネタ v1.0 ・ ニュース×3ステップ公式
       </p>
 
       <Paywall open={paywall} onClose={() => setPaywall(false)} />

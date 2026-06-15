@@ -14,8 +14,8 @@ export default defineConfig(() => ({
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         id: '/',
-        name: '営業雑談アシスタント',
-        short_name: '雑談アシスト',
+        name: 'ひとネタ｜営業の雑談ネタ',
+        short_name: 'ひとネタ',
         description:
           'ルート営業向け。相手の年代・業界に合わせたニュース雑談を3ステップ公式で提案します。',
         theme_color: '#16181d',
