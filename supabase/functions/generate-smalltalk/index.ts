@@ -1,7 +1,7 @@
 // 雑談を生成する Edge Function（Claude / Gemini 両対応）
 // 3ステップ公式（ニュース→主観・共感→質問）＋豆知識＋元ネタ検索語をJSONで返す。
 import { corsHeaders, json } from '../_shared/cors.ts'
-import { callStructured, resolveProvider, type JsonSchema } from '../_shared/llm.ts'
+import { callGroundedJson, callStructured, resolveProvider, type JsonSchema } from '../_shared/llm.ts'
 
 interface CustomerSummary {
   name?: string
@@ -24,8 +24,10 @@ interface Body {
 const SYSTEM = `あなたは日本のルート営業担当者の「雑談ブレーン」です。
 取引先との商談前に使える、自然な雑談ネタを提案します。
 
+まずWeb検索で「相手の業界に関する直近の実在ニュース」を調べ、それを元ネタにしてください。
+
 必ず次の「3ステップ公式」で構成してください:
-1. ニュース・話題のふり（最近の時事/業界トレンドを軽く話題にする。断定しすぎない）
+1. ニュース・話題のふり（Web検索で見つけた直近の実在ニュースを軽く話題にする）
 2. 主観・共感（自分の感想や相手への共感をひと言。押し付けない）
 3. 質問（相手が答えやすい、会話が広がるオープンな質問）
 
@@ -36,7 +38,7 @@ const SYSTEM = `あなたは日本のルート営業担当者の「雑談ブレ�
 口調・配慮:
 - 相手の年代・役職に合わせて敬語のトーンを調整する
 - 政治・宗教・センシティブな話題は避ける
-- 事実が不確かな最新ニュースの固有名詞は断定しない（「〜という話題」「ニュースで見かけた」程度に留める）
+- Web検索で確認できた事実だけを使う。裏が取れない固有名詞は「〜という話題」程度に留める
 - 1文は短く、話し言葉で。実際に口に出せる長さにする`
 
 const schema: JsonSchema = {
@@ -88,6 +90,26 @@ Deno.serve(async (req: Request) => {
 - 年代: ${body.ageLabel}
 - 立場・役職: ${body.roleLabel}${customerBlock}`
 
+  // 出力JSON形式（構造化出力が使えないグラウンディング時のために明示）
+  const jsonSpec = `\n\n出力は次のJSON形式のみ。前後に文章やマークダウンを付けないこと:
+{"talks":[{"topic":"","news":"","empathy":"","question":"","trivia":"","sourceQuery":""}]}
+talksは${count}件。各newsはWeb検索で見つけた直近の実在ニュースに基づけること。`
+
+  // ① Web検索付き生成（最新の実在ニュース＋記事URL）を試す
+  try {
+    const { data, sources } = await callGroundedJson(SYSTEM, userPrompt + jsonSpec, 4000)
+    const rawTalks = ((data as { talks?: Record<string, unknown>[] }).talks ?? []).map((t, i) => {
+      const s = sources[i] // 見つかった記事を順に各雑談へ割り当てる
+      return s ? { ...t, sourceUrl: s.url, sourceTitle: s.title } : t
+    })
+    if (rawTalks.length) {
+      return json({ talks: rawTalks, provider: resolveProvider(), live: sources.length > 0 })
+    }
+  } catch (e) {
+    console.warn('Web検索付き生成に失敗。検索なし生成にフォールバックします:', String(e))
+  }
+
+  // ② フォールバック: Web検索なしの構造化生成
   try {
     const result = (await callStructured(SYSTEM, userPrompt, schema)) as { talks?: unknown[] }
     return json({ talks: result.talks ?? [], provider: resolveProvider() })
