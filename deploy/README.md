@@ -67,6 +67,11 @@ Vercel → プロジェクト → Settings → Environment Variables:
 | Name | Value |
 |------|-------|
 | `VITE_API_BASE_URL` | `https://<プロジェクトRef>.supabase.co/functions/v1` |
+| `VITE_SUPABASE_ANON_KEY` | Settings → API Keys の anon / publishable キー |
+
+> Edge Function は `verify_jwt=true` で動かしているため、フロントは
+> `VITE_SUPABASE_ANON_KEY` を `Authorization` / `apikey` ヘッダーに付けて呼び出す。
+> 未設定だと 401 ではじかれ、内蔵テンプレート生成にフォールバックする。
 
 設定後、**Redeploy** する。
 
@@ -79,6 +84,8 @@ Vercel → プロジェクト → Settings → Environment Variables:
 ```bash
 curl -X POST "https://<Ref>.supabase.co/functions/v1/generate-smalltalk" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <anon/publishableキー>" \
+  -H "apikey: <anon/publishableキー>" \
   -d '{"industryLabel":"自動車","ageLabel":"40代","roleLabel":"課長","count":2}'
 ```
 

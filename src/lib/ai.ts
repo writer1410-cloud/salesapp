@@ -2,6 +2,21 @@ import type { Customer, SmallTalk } from '../types'
 import { ageLabel, industryLabel, roleLabel } from '../data/options'
 import { generateFallback, summarizeFallback, type GenerateParams } from './fallbackGenerator'
 import { uid } from './util'
+import { SUPABASE_ANON_KEY } from './config'
+
+/**
+ * Edge Function 呼び出し用ヘッダー。
+ * 関数は verify_jwt=true のため、anon/publishable キーを
+ * Authorization と apikey の両方で送る（キー未設定なら付けない）。
+ */
+function apiHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (SUPABASE_ANON_KEY) {
+    headers.Authorization = `Bearer ${SUPABASE_ANON_KEY}`
+    headers.apikey = SUPABASE_ANON_KEY
+  }
+  return headers
+}
 
 export interface GenerateResult {
   talks: SmallTalk[]
@@ -29,7 +44,7 @@ export async function generateSmallTalks(
     try {
       const res = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/generate-smalltalk`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders(),
         body: JSON.stringify({
           industry: gen.industry,
           industryLabel: industryLabel(gen.industry),
@@ -71,7 +86,7 @@ export async function summarizeNotes(
     try {
       const res = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/summarize-notes`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders(),
         body: JSON.stringify({ text }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
