@@ -710,6 +710,13 @@ textarea:focus {
   border-color: #e2d3a8;
   color: var(--gold-d);
 }
+.published {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-soft, #888);
+}
 
 /* ---- オンボーディング ---- */
 .onboarding {

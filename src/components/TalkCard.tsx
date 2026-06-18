@@ -15,18 +15,21 @@ interface Props {
 /** 3ステップ公式（ニュース→主観・共感→質問）＋豆知識を表示するカード */
 export function TalkCard({ talk, onSave, onSpeak, ttsLocked, saved, compact }: Props) {
   const { tag, title } = splitTopic(talk.topic)
-  const isSns = !!tag && tag.includes('SNS')
+  // SNSかどうかは AI が返す kind を優先し、無ければ見出しタグから判定
+  const isSns = talk.kind === 'sns' || (!!tag && tag.includes('SNS'))
+  const badge = isSns ? 'SNSトレンド' : tag
   return (
     <div className={`card talk-card${isSns ? ' is-sns' : ''}`}>
       <div className="talk-topic">
         <span className="topic-text">
-          {tag && <span className={`topic-tag${isSns ? ' sns' : ''}`}>{tag}</span>}
+          {badge && <span className={`topic-tag${isSns ? ' sns' : ''}`}>{badge}</span>}
           {title}
         </span>
         <span className={`src ${talk.source}`}>{talk.source === 'ai' ? 'AI' : 'TEMPLATE'}</span>
       </div>
 
       <Step no="01" kind="ニュース・話題" text={talk.news}>
+        {talk.published && <span className="published">🕒 {talk.published}</span>}
         {talk.sourceUrl ? (
           <a className="news-link src-live" href={talk.sourceUrl} target="_blank" rel="noopener noreferrer">
             <Icon name="external" size={14} />

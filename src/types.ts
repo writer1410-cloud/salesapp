@@ -85,6 +85,8 @@ export interface SmallTalk {
   sourceQuery: string // 元ネタを探すためのニュース検索キーワード
   sourceUrl?: string // 実際の参照ニュース記事URL（Web検索連動時）
   sourceTitle?: string // 参照記事の見出し
+  kind?: 'news' | 'sns' // 元ネタの種類（業界ニュース / SNSトレンド）
+  published?: string // 元ネタの掲載日時（例「本日」「2026-06-18」）
   industry: IndustryId
   ageGroup: AgeGroupId
   role: RoleId

@@ -103,6 +103,8 @@ export async function summarizeNotes(
 
 interface RawTalk {
   topic?: string
+  kind?: string
+  published?: string
   news?: string
   empathy?: string
   question?: string
@@ -123,6 +125,8 @@ function normalize(t: RawTalk, gen: GenerateParams): SmallTalk {
     sourceQuery: t.sourceQuery ?? t.topic ?? '',
     sourceUrl: t.sourceUrl,
     sourceTitle: t.sourceTitle,
+    kind: t.kind === 'sns' ? 'sns' : t.kind === 'news' ? 'news' : undefined,
+    published: t.published,
     industry: gen.industry,
     ageGroup: gen.ageGroup,
     role: gen.role,
