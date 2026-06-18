@@ -1,7 +1,7 @@
 // Claude / Gemini 両対応の LLM 呼び出しモジュール。
 // 環境変数 AI_PROVIDER ("claude" | "gemini") で切り替える。
 //   - claude:  ANTHROPIC_API_KEY を使用（モデル: claude-opus-4-8）
-//   - gemini:  GEMINI_API_KEY を使用（モデル: gemini-2.0-flash）
+//   - gemini:  GEMINI_API_KEY を使用（モデル: gemini-2.5-flash、GEMINI_MODELで上書き可）
 // どちらのキーが設定されているかで自動判定もする。
 
 export type Provider = 'claude' | 'gemini'
@@ -111,7 +111,7 @@ async function callGemini(system: string, user: string, schema: JsonSchema, maxT
   const apiKey = Deno.env.get('GEMINI_API_KEY')
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set')
 
-  const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.0-flash'
+  const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash'
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
 
   const res = await fetch(url, {
@@ -168,7 +168,7 @@ async function callGeminiGrounded(
   const apiKey = Deno.env.get('GEMINI_API_KEY')
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set')
 
-  const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.0-flash'
+  const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash'
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
 
   const res = await fetch(url, {
